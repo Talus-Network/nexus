@@ -59,5 +59,5 @@ PYTHONPATH=src pytest tests
 ```
 
 <!-- References -->
-[main_py]: ./server/main.py
-[tools_py]: ./server/tools/tools.py
+[main_py]: ./src/nexus_tools/server/main.py
+[tools_py]: ./src/nexus_tools/server/tools/tools.py
