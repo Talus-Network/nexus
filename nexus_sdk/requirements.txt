@@ -1,0 +1,2 @@
+# Last version before JSON RPC is marked as deprecated
+pysui==0.52.0

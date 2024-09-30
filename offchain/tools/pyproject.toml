@@ -1,0 +1,67 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "nexus_tools"
+version = "0.1.0"
+description = "Nexus offchain tool execution"
+authors = [
+    { name="Talus", email="hi@talus.network" }
+]
+dependencies = [
+    "aiofiles",
+    "aniso8601",
+    "async-exit-stack",
+    "async-generator",
+    "certifi",
+    "chardet",
+    "click",
+    "dnspython",
+    "email-validator",
+    "fastapi",
+    "graphene",
+    "graphql-core",
+    "graphql-relay",
+    "h11",
+    "httptools",
+    "httpx",
+    "itsdangerous",
+    "Jinja2",
+    "MarkupSafe",
+    "promise",
+    "pydantic",
+    "python-dotenv",
+    "python-multipart",
+    "requests",
+    "Rx",
+    "starlette",
+    "typing-extensions",
+    "ujson",
+    "urllib3",
+    "uvicorn",
+    "uvloop",
+    "watchgod",
+    "websockets",
+    "ollama",
+    "crewai",
+    "crewai-tools",
+    "pytest",
+    "langchain_community",
+    "langchain_openai",
+    "duckduckgo-search",
+    "langchain",
+    "wikipedia",
+    "langchain-experimental",
+    "arxiv",
+    "xmltodict",
+    "wolframalpha",
+    "langchain_experimental",
+    "google-generativeai",
+    "unstructured"
+]
+
+

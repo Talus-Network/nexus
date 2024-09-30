@@ -1,0 +1,160 @@
+# Github workflow to build and test the Talus Agentic Framework project
+
+name: Talus Agentic Framework
+on: [push]
+
+env:
+  # defines what Sui version to install from the Sui's Github release page
+  # https://github.com/MystenLabs/sui/releases
+  SUI_REF: testnet-v1.26.1
+
+jobs:
+  # 1. Get Sui CLI
+  # 2. Builds and tests talus framework package
+  build-agentic-framework:
+    name: (Move) Build Agentic Framework
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      # 1.
+      - name: Fetch Sui CLI
+        uses: ./.github/actions/fetch-sui-cli
+        with:
+          sui_ref: ${{ env.SUI_REF }}
+
+      # 2.
+      - run: sui move build -p onchain
+      - run: sui move test -p onchain
+
+  # We use nightly for formatting only because lots of nice format rules are
+  # not available in stable Rust yet.
+  #
+  # 1. Get nightly Rust toolchain
+  # 2. Check Rust formatting
+  check-e2e-tests-fmt:
+    name: (Rust) Check Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      # 1.
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          override: true
+          components: rustfmt
+
+      # 2.
+      - run: cd e2e_tests && cargo fmt -- --check
+
+  # 1. Get stable Rust toolchain
+  # 2. Set up caching
+  # 3. Build and check Rust binary
+  # 4. Upload Rust binary as artifact
+  build-e2e-tests:
+    name: (Rust) Build E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      # 1.
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          override: true
+          components: clippy
+
+      # 2.
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            e2e_tests/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      # 3.
+      - run: cd e2e_tests && cargo build
+      - run: cd e2e_tests && cargo clippy -- -D warnings
+
+      # 4.
+      - name: Upload Rust binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-tests-binary # ARTIFACT NAME
+          path: e2e_tests/target/debug/e2e_tests_bin # FROM THIS PATH
+          retention-days: 1 # we only need this for the next job
+
+  # 1. Get necessary files: code, Sui CLI, Rust binary.
+  #    The Ollama APIs are mocked in the Rust e2e binary
+  # 2. Start Sui Localnet as a bg process with a fresh genesis and localnet wallet
+  # 3. Deploy Talus Pkg and export FW_PKG_ID env variable
+  # 4. Run E2E Tests binary with appropriate env variables
+  # 5. Shutdown the localnet to clean up
+  run-e2e-tests:
+    name: Run E2E Tests
+    runs-on: ubuntu-latest
+    needs: [build-agentic-framework, build-e2e-tests]
+    steps:
+      # 1.
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Fetch Sui CLI
+        uses: ./.github/actions/fetch-sui-cli
+        with:
+          sui_ref: ${{ env.SUI_REF }}
+      - name: Download Rust binary
+        uses: actions/download-artifact@v3
+        with:
+          name: e2e-tests-binary
+
+      # 2.
+      - name: Start Sui Localnet
+        run: |
+          sui genesis -f
+          nohup sui start &
+          echo $! > sui-localnet.pid &
+          sleep 5
+        shell: bash
+
+      # 3.
+      - name: Deploy Talus Pkg and export FW_PKG_ID
+        run: |
+          cd onchain
+          json=$(sui client publish --skip-dependency-verification --json)
+
+          fw_pkg_id=$(echo $json | jq -cr '.objectChanges[] | select(.packageId) | .packageId')
+          if [ -z "$fw_pkg_id" ]; then
+            echo "Cannot get pkg ID from JSON \n\n${json}"
+          else
+            echo "Talus framework package ID: $fw_pkg_id"
+          fi
+
+          echo "FW_PKG_ID=$(echo $fw_pkg_id)" >> $GITHUB_ENV
+
+      # 4.
+      - name: Run E2E Tests binary
+        run: |
+          export SUI_WALLET_PATH=~/.sui/sui_config/client.yaml
+          export RUST_LOG=info,e2e_tests=debug
+          chmod +x e2e_tests_bin
+          ./e2e_tests_bin
+
+      # 5.
+      - name: Shutdown Sui Localnet
+        run: |
+          kill $(cat sui-localnet.pid)
+        shell: bash

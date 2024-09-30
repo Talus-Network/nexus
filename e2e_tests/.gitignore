@@ -1,0 +1,3 @@
+# ! Don't ignore Cargo.lock so that we can cache the dependencies on CI
+
+target

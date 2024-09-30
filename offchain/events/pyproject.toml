@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "nexus_events"
+version = "0.1.0"
+description = "Nexus offchain event handling"
+authors = [
+    { name="Talus", email="hi@talus.network" }
+]
+dependencies = [
+    "python-dotenv",
+    "pysui==0.52.0",
+    "asyncio",
+    "aiohttp",
+    "pathlib",
+    "pynacl",
+    "psutil",
+    "unidecode"
+]
+
+

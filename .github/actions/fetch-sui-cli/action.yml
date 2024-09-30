@@ -1,0 +1,21 @@
+name: "Setup Sui CLI"
+description: "Downloads and sets up the Sui CLI"
+inputs:
+  sui_ref:
+    description: "Sui version to download from the Sui's Github release page"
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - run: wget "https://github.com/MystenLabs/sui/releases/download/${{ inputs.sui_ref }}/sui-${{ inputs.sui_ref }}-ubuntu-x86_64.tgz"
+      shell: bash
+    - run: tar -xvf "sui-${{ inputs.sui_ref }}-ubuntu-x86_64.tgz"
+      shell: bash
+    - run: mkdir -p /home/runner/.local/bin
+      shell: bash
+    - run: mv sui /home/runner/.local/bin/sui
+      shell: bash
+    - run: sudo chmod +x /home/runner/.local/bin/sui
+      shell: bash
+    - run: sui --version
+      shell: bash

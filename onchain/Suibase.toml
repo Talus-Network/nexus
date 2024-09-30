@@ -1,0 +1,5 @@
+[meta]
+creation_timestamp = "1720027248390943 2024-07-03 13:20:48.390943 -04:00"
+
+[packages]
+talus = { uuid = "NH5F3LHUSTK3T3U6DVMWI2CJEA", uuid_custom = false }

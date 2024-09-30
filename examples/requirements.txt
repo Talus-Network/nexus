@@ -1,0 +1,7 @@
+# Last version before JSON RPC is marked as deprecated
+pysui==0.52.0
+asyncio
+# Get a decent python shell for exploring the SDK and evertyhing
+ptpython
+# For colorized output
+colorama
