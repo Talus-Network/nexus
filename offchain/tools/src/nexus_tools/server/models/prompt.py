@@ -20,7 +20,7 @@ class Prompt(BaseModel):
     """
 
     prompt: str = Field(alias="prompt")
-    model: str = Field(alias="model", default="llama3:70b")
+    model: str = Field(alias="model", default="llama3.2:1b")
     max_tokens: int = Field(alias="max_tokens", default=1000)
     temperature: float = Field(alias="temperature", default=1.0)
     tools: Optional[List[str]] = Field(

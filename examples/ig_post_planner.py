@@ -181,7 +181,7 @@ class InstagramPostPlanner:
             return "Cluster execution failed"
 
         print(f"Cluster execution started with ID: {execution_id}")
-        return get_cluster_execution_response(self.client, execution_id)
+        return get_cluster_execution_response(self.client, execution_id, 600)
 
 
 # Runs the Instagram Post Planner example using the provided Nexus package ID.
