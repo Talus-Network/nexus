@@ -76,7 +76,7 @@ executables there.
 
 ### Ollama
 
-For the LLM component we install and use [Ollama][ollama] with the `llama3.1` model. You can
+For the LLM component we install and use [Ollama][ollama] with the `llama3.2:1b` model. You can
 install both with `just ollama-setup`.
 
 ## Example: Instagram Post Planner

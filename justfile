@@ -1,5 +1,5 @@
 python_version := "3.10"
-llama_version := "llama3.1"
+llama_version := "llama3.2:1b"
 sui_tag := "testnet-v1.28.3"
 
 [private]
