@@ -66,9 +66,6 @@ compatible (from the Sui Move point of view) chain, based on [`Suibase`][suibase
 
 You can download and install Suibase with `just suibase-setup`.
 
-> [!NOTE]
-> Our setup script pins localnet to a particular version in `~/suibase/workdirs/localnet/suibase.yaml`
-
 ### `PATH`
 
 Make sure `~/.local/bin` is in your `PATH`. Suibase requires this, as it installs its

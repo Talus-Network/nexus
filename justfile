@@ -1,6 +1,5 @@
 python_version := "3.10"
 llama_version := "llama3.2:1b"
-sui_tag := "testnet-v1.28.3"
 
 [private]
 default:
@@ -97,12 +96,13 @@ suibase-setup:
         cd ~/suibase
         ./install
 
+        # Because Suibase does not support pagination of Github Sui's releases,
+        # we just use the latest release.
+        # While we could use 'force_tag' in the Suibase config, with the cadence
+        # of Sui releases this would break every now and then.
+        # Instead, we rely on the fact that the features we use should be stable
+        # and we don't _expect_ breaking changes.
         localnet create
-        # Pin Sui version to minimum supported by Suibase.
-        # This ought to match the talus package version as close as possible.
-        config=~/suibase/workdirs/localnet/suibase.yaml
-        echo '' >> $config
-        echo 'force_tag: "{{ sui_tag }}"' >> $config
         localnet update
     else
         echo ~/suibase exists
