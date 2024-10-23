@@ -162,4 +162,5 @@ nohup.out
 .idea
 *.iml
 .vscode
-./docker/sui-network/genesis/files/*
+./docker/sui-network/genesis/files/
+./docker/sui-network/genesis/files/.venv

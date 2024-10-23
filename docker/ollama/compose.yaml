@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  ollama:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    build:
+      context: "."
+      args:
+        LLAMA_MODEL_VERSION: ${LLAMA_MODEL_VERSION} # or any other model like gpt3
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
