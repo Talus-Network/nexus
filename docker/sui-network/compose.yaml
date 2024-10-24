@@ -137,7 +137,7 @@ services:
         max-file: "10"
         max-size: "1g"
   fullnode1:
-    image: mysten/sui-node:testnet-v1.29.1
+    image: mysten/sui-tools:testnet-v1.29.1
     hostname: fullnode1
     container_name: fullnode1
     environment:
@@ -167,5 +167,39 @@ services:
       build-genesis:
         condition: service_completed_successfully
 
+  faucet:
+    image: mysten/sui-tools:testnet-v1.29.1
+    hostname: faucet
+    container_name: faucet
+    environment:
+      - RUST_BACKTRACE=1
+      - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error
+      - SUI_CONFIG_DIR=/opt/sui/config
+      - WRITE_AHEAD_LOG="/opt/sui/faucet/wal.log"
+      - HOST_IP=0.0.0.0
+    volumes:
+      - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:ro
+      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
+      - ./genesis/static/sui.keystore:/opt/sui/config/sui.keystore:ro
+      - faucet-data:/opt/sui/faucet
+    command:
+      [
+        "/usr/local/bin/sui-faucet",
+        "--write-ahead-log",
+        "/opt/sui/faucet/wal.log",
+        "--host-ip",
+        "0.0.0.0",
+      ]
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "1g"
+    depends_on:
+      build-genesis:
+        condition: service_completed_successfully
+
 volumes:
   genesis-data:
+  faucet-data:

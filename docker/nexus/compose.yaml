@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  tools:
+    build:
+      context: "../../offchain/tools/"
+      dockerfile: "${PWD:-.}/nexus/Dockerfile"
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+  # events:
+  #   build:
+  #     context: "../../offchain/events/"
+  #     dockerfile: "${PWD:-.}/nexus/Dockerfile"
+  #     args:
+  #       INSTALL_RUST: "true"
+  #   ports:
+  #     - "8080:8080"
+  #   restart: unless-stopped
