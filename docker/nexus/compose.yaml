@@ -59,7 +59,7 @@ services:
       - RUST_LOG=error
       - SUI_CONFIG_DIR=/opt/sui/config
     volumes:
-      - genesis-data:/opt/sui/genesis
+      - ../sui-network/genesis/files:/opt/sui/genesis
       - shared:/shared
       - ./bin/publish_package.sh:/opt/sui/publish_package.sh:ro
       - ../sui-network/genesis/static/client.yaml:/opt/sui/config/client.yaml:rw

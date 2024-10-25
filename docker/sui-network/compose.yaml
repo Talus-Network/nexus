@@ -20,7 +20,7 @@ services:
         SUI_TAG: ${SUI_TAG}
     pull_policy: never
     volumes:
-      - genesis-data:/opt/sui/genesis
+      - ./genesis:/opt/sui/genesis
     environment:
       - SUI_TAG=${SUI_TAG}
     restart: "no"
@@ -44,7 +44,6 @@ services:
       - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
-      - genesis-data:/opt/sui/genesis
       - validator1-db:/opt/sui/db:rw
       - ./genesis/files/validator1-8080.yaml:/opt/sui/config/validator.yaml:ro
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
@@ -76,7 +75,6 @@ services:
       - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
-      - genesis-data:/opt/sui/genesis
       - validator2-db:/opt/sui/db:rw
       - ./genesis/files/validator2-8080.yaml:/opt/sui/config/validator.yaml:ro
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
@@ -108,7 +106,6 @@ services:
       - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
-      - genesis-data:/opt/sui/genesis
       - validator3-db:/opt/sui/db:rw
       - ./genesis/files/validator3-8080.yaml:/opt/sui/config/validator.yaml:ro
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
@@ -140,7 +137,6 @@ services:
       - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
-      - genesis-data:/opt/sui/genesis
       - validator4-db:/opt/sui/db:rw
       - ./genesis/files/validator4-8080.yaml:/opt/sui/config/validator.yaml:ro
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
@@ -170,7 +166,6 @@ services:
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
       - SUI_CONFIG_DIR=/opt/sui/config
     volumes:
-      - genesis-data:/opt/sui/genesis
       - fullnode1-db:/opt/sui/db:rw
       - ./genesis/static/fullnode.yaml:/opt/sui/config/fullnode.yaml:ro
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
@@ -227,7 +222,6 @@ services:
         condition: service_completed_successfully
 
 volumes:
-  genesis-data:
   validator1-db:
   validator2-db:
   validator3-db:
