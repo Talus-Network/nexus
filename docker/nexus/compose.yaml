@@ -52,7 +52,7 @@ services:
         condition: service_started
 
   publish-package:
-    image: sui-tools:${SUI_TAG}
+    image: talus-network/sui-tools:${SUI_TAG}
     container_name: publish-package
     environment:
       - RUST_BACKTRACE=1

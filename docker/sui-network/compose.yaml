@@ -3,7 +3,7 @@ version: "3"
 services:
   build-suitools:
     restart: "no"
-    image: sui-tools:${SUI_TAG}
+    image: talus-network/sui-tools:${SUI_TAG}
     build:
       context: "."
       dockerfile: Dockerfile
@@ -11,7 +11,7 @@ services:
         SUI_TAG: ${SUI_TAG}
 
   build-genesis:
-    image: sui-build-genesis:${SUI_TAG}
+    image: talus-network/build-sui-genesis:${SUI_TAG}
     container_name: build-genesis
     build:
       context: "./genesis"
@@ -29,12 +29,7 @@ services:
         condition: service_completed_successfully
 
   validator1:
-    depends_on:
-      build-genesis:
-        condition: service_completed_successfully
-      build-suitools:
-        condition: service_completed_successfully
-    image: sui-tools:${SUI_TAG}
+    image: talus-network/sui-tools:${SUI_TAG}
     container_name: validator1
     hostname: validator1
     environment:
@@ -59,13 +54,14 @@ services:
       options:
         max-file: "10"
         max-size: "1g"
-  validator2:
     depends_on:
       build-genesis:
         condition: service_completed_successfully
       build-suitools:
         condition: service_completed_successfully
-    image: sui-tools:${SUI_TAG}
+
+  validator2:
+    image: talus-network/sui-tools:${SUI_TAG}
     container_name: validator2
     hostname: validator2
     environment:
@@ -90,13 +86,14 @@ services:
       options:
         max-file: "10"
         max-size: "1g"
-  validator3:
     depends_on:
       build-genesis:
         condition: service_completed_successfully
       build-suitools:
         condition: service_completed_successfully
-    image: sui-tools:${SUI_TAG}
+
+  validator3:
+    image: talus-network/sui-tools:${SUI_TAG}
     container_name: validator3
     hostname: validator3
     environment:
@@ -121,13 +118,14 @@ services:
       options:
         max-file: "10"
         max-size: "1g"
-  validator4:
     depends_on:
       build-genesis:
         condition: service_completed_successfully
       build-suitools:
         condition: service_completed_successfully
-    image: sui-tools:${SUI_TAG}
+
+  validator4:
+    image: talus-network/sui-tools:${SUI_TAG}
     container_name: validator4
     hostname: validator4
     environment:
@@ -152,8 +150,14 @@ services:
       options:
         max-file: "10"
         max-size: "1g"
+    depends_on:
+      build-genesis:
+        condition: service_completed_successfully
+      build-suitools:
+        condition: service_completed_successfully
+
   fullnode1:
-    image: sui-tools:${SUI_TAG}
+    image: talus-network/sui-tools:${SUI_TAG}
     hostname: fullnode1
     container_name: fullnode1
     ports:
@@ -189,7 +193,7 @@ services:
         condition: service_completed_successfully
 
   faucet:
-    image: sui-tools:${SUI_TAG}
+    image: talus-network/sui-tools:${SUI_TAG}
     hostname: faucet
     container_name: faucet
     environment:

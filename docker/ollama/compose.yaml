@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   ollama:
+    image: talus-network/ollama:${LLAMA_MODEL_VERSION_TAG}
     container_name: ollama
     # deploy:
     #   resources:
@@ -13,7 +14,7 @@ services:
     build:
       context: "."
       args:
-        LLAMA_MODEL_VERSION: ${LLAMA_MODEL_VERSION} # or any other model like gpt3
+        LLAMA_MODEL_VERSION: ${LLAMA_MODEL_VERSION}
     ports:
       - "11434:11434"
     restart: unless-stopped
