@@ -160,6 +160,8 @@ services:
     image: sui-tools:${SUI_TAG}
     hostname: fullnode1
     container_name: fullnode1
+    ports:
+      - "9000:9000"
     environment:
       - RUST_BACKTRACE=1
       - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error

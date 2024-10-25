@@ -48,9 +48,9 @@ os.environ['PACKAGE_ID'] = package_id
 os.environ['SUI_PRIVATE_KEY'] = private_key
 os.environ['MODEL_OWNER_CAP_ID'] = model_owner_cap_id
 
-# Default RPC and WebSocket URLs, with fallback to environment variable if set
 rpc_url = os.getenv('RPC_URL', 'http://localhost:9000')
 ws_url = os.getenv('WS_URL', 'ws://localhost:9000')
+tool_url = os.getenv('TOOL_URL', 'http://0.0.0.0:8080/tool/use')
 
 # Command to run the Python script
 command = [
@@ -59,10 +59,11 @@ command = [
     "--privkey", private_key,
     "--modelownercapid", model_owner_cap_id,
     "--rpc", rpc_url,
-    "--ws", ws_url
+    "--ws", ws_url,
+    "--toolurl", tool_url  # New argument for tool URL
 ]
 
-print(command)
+print(f"Running command: {' '.join(command)}")
 
 # Execute the command
 try:

@@ -165,7 +165,7 @@ class TripPlanner:
 
         if execution_id is None:
             return "Cluster execution failed"
-
+        
         print(f"Cluster execution started with ID: {execution_id}")
         return get_cluster_execution_response(self.client, execution_id, 600)
 

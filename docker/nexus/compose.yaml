@@ -10,6 +10,46 @@ services:
     ports:
       - "8080:8080"
     restart: unless-stopped
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    depends_on:
+      build-suitools:
+        condition: service_completed_successfully
+      publish-package:
+        condition: service_completed_successfully
+      prepare-model:
+        condition: service_completed_successfully
+
+  events:
+    container_name: events
+    image: talus-network/nexus-events:latest
+    build:
+      context: "../../offchain/"
+      dockerfile: "${PWD:-.}/nexus/Dockerfile"
+      args:
+        INSTALL_RUST: "true"
+    command: >
+      bash -c "source .venv/bin/activate && python startup_events.py"
+    #command: ["tail", "-f", "/dev/null"]
+    environment:
+      RPC_URL: http://fullnode1:9000
+      WS_URL: ws://fullnode1:9000
+      TOOL_URL: http://tools:8080/tool/use
+      LLM_ASSISTANT_URL: http://tools:8080/predict
+    volumes:
+      - shared:/app/shared
+      - ../sui-network/genesis/static/sui.keystore:/app/sui.keystore:ro
+      - ./bin/startup_events.py:/app/startup_events.py:ro
+    restart: unless-stopped
+    depends_on:
+      build-suitools:
+        condition: service_completed_successfully
+      publish-package:
+        condition: service_completed_successfully
+      prepare-model:
+        condition: service_completed_successfully
+      tools:
+        condition: service_started
 
   publish-package:
     image: sui-tools:${SUI_TAG}
@@ -23,7 +63,7 @@ services:
       - shared:/shared
       - ./bin/publish_package.sh:/opt/sui/publish_package.sh:ro
       - ../sui-network/genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
-      - ../sui-network/genesis/static/sui.keystore:/app/sui.keystore:ro
+      - ../sui-network/genesis/static/sui.keystore:/opt/sui/config/sui.keystore:ro
       - ../../onchain:/opt/sui/onchain
     command: ["bash", "/opt/sui/publish_package.sh"]
     restart: on-failure
@@ -41,6 +81,7 @@ services:
     environment:
       RPC_URL: http://fullnode1:9000
       WS_URL: ws://fullnode1:9000
+      MODEL_URL: http://ollama:11434
     volumes:
       - ./bin/prepare_model.py:/app/prepare_model.py
       - shared:/app/shared
@@ -52,39 +93,22 @@ services:
       publish-package:
         condition: service_completed_successfully
 
-  events:
-    container_name: events
-    image: talus-network/nexus-events:latest
+  examples:
+    container_name: examples
     build:
-      context: "../../offchain/"
+      context: "../../nexus_sdk/"
       dockerfile: "${PWD:-.}/nexus/Dockerfile"
       args:
         INSTALL_RUST: "true"
-    command: ["tail", "-f", "/dev/null"]
     environment:
       RPC_URL: http://fullnode1:9000
       WS_URL: ws://fullnode1:9000
     volumes:
+      - ../../examples:/app/examples
       - shared:/app/shared
       - ../sui-network/genesis/static/sui.keystore:/app/sui.keystore:ro
-      - ./bin/startup_events.py:/app/startup_events.py:ro
-
-    restart: unless-stopped
-
-    # parser.add_argument("--rpc", default="http://localhost:9000", help="RPC URL")
-    # parser.add_argument("--ws", default="ws://localhost:9000", help="WebSocket URL")
-    # parser.add_argument(
-    #     "--packageid",
-    #     default=(os.getenv("PACKAGE_ID")),
-    #     help="Package ID to filter events (required)",
-    # )
-    # parser.add_argument(
-    #     "--privkey",
-    #     default=(os.getenv("SUI_PRIVATE_KEY")),
-    #     help="Sui private key (required)",
-    # )
-    # parser.add_argument(
-    #     "--modelownercapid",
-    #     default=(os.getenv("MODEL_OWNER_CAP_ID")),
-    #     help="Model owner capability object ID (required)",
-    # )
+    command: ["tail", "-f", "/dev/null"]
+    restart: on-failure
+    depends_on:
+      publish-package:
+        condition: service_completed_successfully
