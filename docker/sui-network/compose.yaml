@@ -10,8 +10,29 @@ services:
       args:
         SUI_TAG: ${SUI_TAG}
 
+  publish-package:
+    image: sui-tools:${SUI_TAG}
+    container_name: publish-package
+    environment:
+      - RUST_BACKTRACE=1
+      - RUST_LOG=error
+      - SUI_CONFIG_DIR=/opt/sui/config
+    volumes:
+      - genesis-data:/opt/sui/genesis
+      - shared:/shared
+      - ./package/publish.sh:/opt/sui/publish.sh:ro
+      - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
+      - ./genesis/static/sui.keystore:/opt/sui/config/sui.keystore:ro
+      - ../../onchain:/opt/sui/onchain
+    command: ["bash", "/opt/sui/publish.sh"]
+    restart: on-failure
+    depends_on:
+      build-suitools:
+        condition: service_completed_successfully
+
   build-genesis:
     image: sui-build-genesis:${SUI_TAG}
+    container_name: build-genesis
     build:
       context: "./genesis"
       dockerfile: Dockerfile
@@ -230,3 +251,4 @@ volumes:
   validator3-db:
   validator4-db:
   fullnode1-db:
+  shared:
