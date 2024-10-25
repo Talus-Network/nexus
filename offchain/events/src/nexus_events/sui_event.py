@@ -10,8 +10,6 @@ from pysui.sui.sui_types.event_filter import MoveEventTypeQuery
 from typing import Any
 import sys
 import os
-import sys
-import os
 import signal
 
 root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -19,14 +17,8 @@ sys.path.insert(0, root_dir)
 from nexus_tools.server.tools.tools import TOOLS, TOOL_ARGS_MAPPING
 from pysui.sui.sui_clients.sync_client import SuiClient as SyncClient
 from pysui.sui.sui_txn import SyncTransaction
-from pysui.sui.sui_types.scalars import ObjectID, SuiU64, SuiU8, SuiString, SuiBoolean
-from pysui.sui.sui_txresults.complex_tx import (
-    SubscribedEvent,
-    SubscribedEventParms,
-    Event,
-)
-from pysui.sui.sui_types.collections import SuiArray
-import hashlib
+from pysui.sui.sui_types.scalars import ObjectID, SuiString, SuiBoolean
+from pysui.sui.sui_txresults.complex_tx import SubscribedEvent
 from nexus_events.offchain import OffChain
 import json
 import unicodedata
@@ -40,10 +32,9 @@ node_type = os.environ.get("NODE_TYPE", "TALUS_NODE")
 off_chain = OffChain()
 
 
-async def call_use_tool(name, args):
+async def call_use_tool(name, args, url):
     """calls /tool/use endpoint with tool name and args, called by event handler"""
-    print(f"Calling /tool/use with name: {name}, args: {args}")
-    url = "http://0.0.0.0:8080/tool/use"
+    print(f"Calling /tool/use with name: {name}, args: {args}, url: {url}")
 
     try:
         if name not in TOOLS:
@@ -89,7 +80,7 @@ def sanitize_text(text):
 
 
 async def prompt_event_handler(
-    client: SuiClient, package_id: str, model_owner_cap_id: str, event: SubscribedEvent
+    client: SuiClient, package_id: str, model_owner_cap_id: str, event: SubscribedEvent, tool_url: str
 ) -> Any:
     """Handler captures the move event type for each received."""
     try:
@@ -113,7 +104,7 @@ async def prompt_event_handler(
             tool_args = parsed_json["tool"]["fields"]["args"]
             print(f"Calling tool '{tool_name}' with args: {tool_args}")
 
-            tool_result = await call_use_tool(tool_name, tool_args)
+            tool_result = await call_use_tool(tool_name, tool_args, tool_url)
             tool_result = tool_result["result"]
             print(f"tool_result: {tool_result}")
 
@@ -194,11 +185,17 @@ def main():
         default=(os.getenv("MODEL_OWNER_CAP_ID")),
         help="Model owner capability object ID (required)",
     )
+    parser.add_argument(
+        "--toolurl",
+        default="http://0.0.0.0:8080/tool/use",
+        help="URL to call /tool/use endpoint",
+    )
 
     args = parser.parse_args()
 
     package_id = args.packageid
     model_owner_cap_id = args.modelownercapid
+    tool_url = args.toolurl
 
     config = SuiConfig.user_config(
         rpc_url=args.rpc, ws_url=args.ws, prv_keys=[args.privkey]
@@ -212,6 +209,7 @@ def main():
             package_id,
             model_owner_cap_id,
             cursor=next_cursor,
+            tool_url=tool_url,
         )
 
 
@@ -225,6 +223,7 @@ def process_next_event_page(
     package_id: str,
     model_owner_cap_id: str,
     cursor: EventID,
+    tool_url: str,
 ):
     prompt_event_type = f"{package_id}::prompt::RequestForCompletionEvent"
     event_filter = MoveEventTypeQuery(prompt_event_type)
@@ -248,7 +247,7 @@ def process_next_event_page(
 
     print(f"Processing {len(events)} events")
     for event in events:
-        asyncio.run(prompt_event_handler(client, package_id, model_owner_cap_id, event))
+        asyncio.run(prompt_event_handler(client, package_id, model_owner_cap_id, event, tool_url))
 
     # Set the cursor to the last event.
     # Also next fetch will skip the first event (the last event of this fetch)

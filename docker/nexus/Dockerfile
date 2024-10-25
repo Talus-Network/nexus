@@ -2,6 +2,7 @@ FROM python:3.10-slim AS builder
 
 ARG INSTALL_RUST=false
 
+
 WORKDIR /app
 
 COPY . .
@@ -20,7 +21,16 @@ RUN pip install uv && \
     if [ "$INSTALL_RUST" = "true" ]; then \
         . $HOME/.cargo/env; \
     fi && \
-    uv pip install . 
+    if [ -f "pyproject.toml" ]; then \
+        uv pip install .; \
+    else \
+        for dir in */; do \
+            if [ -f "$dir/pyproject.toml" ]; then \
+                uv pip install $dir; \
+            fi; \
+        done; \
+    fi
+
 
 FROM python:3.10-slim AS runtime
 
