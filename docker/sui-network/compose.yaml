@@ -1,26 +1,39 @@
 version: "3"
 
 services:
-  build-genesis:
-    platform: linux/amd64
+  build-suitools:
+    restart: "no"
+    image: sui-tools:${SUI_TAG}
     build:
-      platforms:
-        - "linux/amd64"
+      context: "."
+      dockerfile: Dockerfile
+      args:
+        SUI_TAG: ${SUI_TAG}
+
+  build-genesis:
+    image: sui-build-genesis:${SUI_TAG}
+    build:
       context: "./genesis"
       dockerfile: Dockerfile
       args:
-        SUI_TAG: ${SUI_TAG} # This will read the tag from the .env file
+        SUI_TAG: ${SUI_TAG}
+    pull_policy: never
     volumes:
       - genesis-data:/opt/sui/genesis
     environment:
-      - SUI_TAG=${SUI_TAG} # This ensures the environment variable is used for any other dynamic config
+      - SUI_TAG=${SUI_TAG}
     restart: "no"
+    depends_on:
+      build-suitools:
+        condition: service_completed_successfully
 
   validator1:
     depends_on:
       build-genesis:
         condition: service_completed_successfully
-    image: mysten/sui-node:testnet-v1.29.1
+      build-suitools:
+        condition: service_completed_successfully
+    image: sui-tools:${SUI_TAG}
     container_name: validator1
     hostname: validator1
     environment:
@@ -31,9 +44,9 @@ services:
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - genesis-data:/opt/sui/genesis
+      - validator1-db:/opt/sui/db:rw
       - ./genesis/files/validator1-8080.yaml:/opt/sui/config/validator.yaml:ro
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
-      - /tmp/sui/db1:/opt/sui/db:rw
     command:
       [
         "/usr/local/bin/sui-node",
@@ -50,7 +63,9 @@ services:
     depends_on:
       build-genesis:
         condition: service_completed_successfully
-    image: mysten/sui-node:testnet-v1.29.1
+      build-suitools:
+        condition: service_completed_successfully
+    image: sui-tools:${SUI_TAG}
     container_name: validator2
     hostname: validator2
     environment:
@@ -61,9 +76,9 @@ services:
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - genesis-data:/opt/sui/genesis
+      - validator2-db:/opt/sui/db:rw
       - ./genesis/files/validator2-8080.yaml:/opt/sui/config/validator.yaml:ro
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
-      - /tmp/sui/db2:/opt/sui/db:rw
     command:
       [
         "/usr/local/bin/sui-node",
@@ -80,7 +95,9 @@ services:
     depends_on:
       build-genesis:
         condition: service_completed_successfully
-    image: mysten/sui-node:testnet-v1.29.1
+      build-suitools:
+        condition: service_completed_successfully
+    image: sui-tools:${SUI_TAG}
     container_name: validator3
     hostname: validator3
     environment:
@@ -91,9 +108,9 @@ services:
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - genesis-data:/opt/sui/genesis
+      - validator3-db:/opt/sui/db:rw
       - ./genesis/files/validator3-8080.yaml:/opt/sui/config/validator.yaml:ro
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
-      - /tmp/sui/db3:/opt/sui/db:rw
     command:
       [
         "/usr/local/bin/sui-node",
@@ -110,7 +127,9 @@ services:
     depends_on:
       build-genesis:
         condition: service_completed_successfully
-    image: mysten/sui-node:testnet-v1.29.1
+      build-suitools:
+        condition: service_completed_successfully
+    image: sui-tools:${SUI_TAG}
     container_name: validator4
     hostname: validator4
     environment:
@@ -121,9 +140,9 @@ services:
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - genesis-data:/opt/sui/genesis
+      - validator4-db:/opt/sui/db:rw
       - ./genesis/files/validator4-8080.yaml:/opt/sui/config/validator.yaml:ro
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
-      - /tmp/sui/db4:/opt/sui/db:rw
     command:
       [
         "/usr/local/bin/sui-node",
@@ -137,7 +156,7 @@ services:
         max-file: "10"
         max-size: "1g"
   fullnode1:
-    image: mysten/sui-tools:testnet-v1.29.1
+    image: sui-tools:${SUI_TAG}
     hostname: fullnode1
     container_name: fullnode1
     environment:
@@ -146,11 +165,13 @@ services:
       - RPC_WORKER_THREAD=12
       - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
+      - SUI_CONFIG_DIR=/opt/sui/config
     volumes:
       - genesis-data:/opt/sui/genesis
+      - fullnode1-db:/opt/sui/db:rw
       - ./genesis/static/fullnode.yaml:/opt/sui/config/fullnode.yaml:ro
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
-      - /tmp/sui/db5:/opt/sui/db:rw
+      - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
     command:
       [
         "/usr/local/bin/sui-node",
@@ -166,27 +187,27 @@ services:
     depends_on:
       build-genesis:
         condition: service_completed_successfully
+      build-suitools:
+        condition: service_completed_successfully
 
   faucet:
-    image: mysten/sui-tools:testnet-v1.29.1
+    image: sui-tools:${SUI_TAG}
     hostname: faucet
     container_name: faucet
     environment:
       - RUST_BACKTRACE=1
       - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error
       - SUI_CONFIG_DIR=/opt/sui/config
-      - WRITE_AHEAD_LOG="/opt/sui/faucet/wal.log"
       - HOST_IP=0.0.0.0
     volumes:
-      - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:ro
+      - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
       - ./genesis/static/sui.keystore:/opt/sui/config/sui.keystore:ro
-      - faucet-data:/opt/sui/faucet
     command:
       [
         "/usr/local/bin/sui-faucet",
         "--write-ahead-log",
-        "/opt/sui/faucet/wal.log",
+        "/tmp/faucet.wal",
         "--host-ip",
         "0.0.0.0",
       ]
@@ -199,7 +220,13 @@ services:
     depends_on:
       build-genesis:
         condition: service_completed_successfully
+      build-suitools:
+        condition: service_completed_successfully
 
 volumes:
   genesis-data:
-  faucet-data:
+  validator1-db:
+  validator2-db:
+  validator3-db:
+  validator4-db:
+  fullnode1-db:
