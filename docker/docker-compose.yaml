@@ -1,5 +1,5 @@
 version: "3.8"
 include:
-  - ./sui-network/compose.yaml
+  - ./sui/compose.yaml
   - ./ollama/compose.yaml
   - ./nexus/compose.yaml

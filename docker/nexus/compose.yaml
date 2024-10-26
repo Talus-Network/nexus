@@ -11,13 +11,13 @@ services:
       - "8080:8080"
     restart: unless-stopped
     environment:
-      OLLAMA_HOST: http://ollama:11434
+      OLLAMA_HOST: ${MODEL_URL}
     depends_on:
       build-suitools:
         condition: service_completed_successfully
       publish-package:
         condition: service_completed_successfully
-      prepare-model:
+      bootstrap-model:
         condition: service_completed_successfully
 
   events:
@@ -29,71 +29,54 @@ services:
       args:
         INSTALL_RUST: "true"
     command: >
-      bash -c "source .venv/bin/activate && python startup_events.py"
-    #command: ["tail", "-f", "/dev/null"]
+      bash -c "source .venv/bin/activate && python start_events.py"
     environment:
-      RPC_URL: http://fullnode1:9000
-      WS_URL: ws://fullnode1:9000
-      TOOL_URL: http://tools:8080/tool/use
-      LLM_ASSISTANT_URL: http://tools:8080/predict
+      RPC_URL: ${RPC_URL}
+      WS_URL: ${WS_URL}
+      TOOL_URL: ${TOOL_URL}
+      LLM_ASSISTANT_URL: ${LLM_ASSISTANT_URL}
+      SHARED_DIR: /app/shared
     volumes:
       - shared:/app/shared
-      - ../sui-network/genesis/static/sui.keystore:/app/sui.keystore:ro
-      - ./bin/startup_events.py:/app/startup_events.py:ro
+      - ./bin/start_events.py:/app/start_events.py:ro
     restart: unless-stopped
     depends_on:
       build-suitools:
         condition: service_completed_successfully
       publish-package:
         condition: service_completed_successfully
-      prepare-model:
+      bootstrap-model:
         condition: service_completed_successfully
       tools:
         condition: service_started
 
-  publish-package:
-    image: talus-network/sui-tools:${SUI_TAG}
-    container_name: publish-package
-    environment:
-      - RUST_BACKTRACE=1
-      - RUST_LOG=error
-      - SUI_CONFIG_DIR=/opt/sui/config
-    volumes:
-      - ../sui-network/genesis/files:/opt/sui/genesis
-      - shared:/shared
-      - ./bin/publish_package.sh:/opt/sui/publish_package.sh:ro
-      - ../sui-network/genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
-      - ../sui-network/genesis/static/sui.keystore:/opt/sui/config/sui.keystore:ro
-      - ../../onchain:/opt/sui/onchain
-    command: ["bash", "/opt/sui/publish_package.sh"]
-    restart: on-failure
-    depends_on:
-      build-suitools:
-        condition: service_completed_successfully
-
-  prepare-model:
-    container_name: prepare-model
+  bootstrap-model:
+    container_name: bootstrap-model
     build:
       context: "../../nexus_sdk/"
       dockerfile: "${PWD:-.}/nexus/Dockerfile"
       args:
         INSTALL_RUST: "true"
     environment:
-      RPC_URL: http://fullnode1:9000
-      WS_URL: ws://fullnode1:9000
-      MODEL_URL: http://ollama:11434
+      RPC_URL: ${RPC_URL}
+      WS_URL: ${WS_URL}
+      MODEL_URL: ${MODEL_URL}
+      FAUCET_URL: ${FAUCET_URL}
+      SHARED_DIR: /app/shared
     volumes:
-      - ./bin/prepare_model.py:/app/prepare_model.py
+      - ./bin/bootstrap_model.py:/app/bootstrap_model.py
       - shared:/app/shared
-      - ../sui-network/genesis/static/sui.keystore:/app/sui.keystore:ro
     command: >
-      bash -c "source .venv/bin/activate && python prepare_model.py"
+      bash -c "source .venv/bin/activate && python bootstrap_model.py"
     restart: on-failure
     depends_on:
       publish-package:
         condition: service_completed_successfully
+      faucet:
+        condition: service_started
 
   examples:
+    image: talus-network/nexus-examples:latest
     container_name: examples
     build:
       context: "../../nexus_sdk/"
@@ -101,12 +84,12 @@ services:
       args:
         INSTALL_RUST: "true"
     environment:
-      RPC_URL: http://fullnode1:9000
-      WS_URL: ws://fullnode1:9000
+      RPC_URL: ${RPC_URL}
+      WS_URL: ${WS_URL}
+      SHARED_DIR: /app/shared
     volumes:
       - ../../examples:/app/examples
       - shared:/app/shared
-      - ../sui-network/genesis/static/sui.keystore:/app/sui.keystore:ro
     command: ["tail", "-f", "/dev/null"]
     restart: on-failure
     depends_on:

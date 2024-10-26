@@ -28,6 +28,29 @@ services:
       build-suitools:
         condition: service_completed_successfully
 
+  publish-package:
+    image: talus-network/sui-tools:${SUI_TAG}
+    container_name: publish-package
+    environment:
+      - RUST_BACKTRACE=1
+      - RUST_LOG=error
+      - SUI_CONFIG_DIR=/opt/sui/config
+      - SHARED_DIR=/app/shared
+      - RPC_URL=${RPC_URL}
+
+    volumes:
+      - ./genesis/files:/opt/sui/genesis
+      - shared:/app/shared
+      - ./bin/publish_package.sh:/opt/sui/publish_package.sh:ro
+      - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
+      - ./genesis/static/sui.keystore:/opt/sui/config/sui.keystore:ro
+      - ../../onchain:/opt/sui/onchain
+    command: ["bash", "/opt/sui/publish_package.sh"]
+    restart: on-failure
+    depends_on:
+      build-suitools:
+        condition: service_completed_successfully
+
   validator1:
     image: talus-network/sui-tools:${SUI_TAG}
     container_name: validator1
@@ -169,6 +192,7 @@ services:
       - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
       - SUI_CONFIG_DIR=/opt/sui/config
+      - RPC_URL=${RPC_URL}
     volumes:
       - fullnode1-db:/opt/sui/db:rw
       - ./genesis/static/fullnode.yaml:/opt/sui/config/fullnode.yaml:ro
@@ -201,6 +225,16 @@ services:
       - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error
       - SUI_CONFIG_DIR=/opt/sui/config
       - HOST_IP=0.0.0.0
+      - RPC_URL=${RPC_URL}
+    ports:
+      - "5003:5003"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
     volumes:
       - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
@@ -212,6 +246,8 @@ services:
         "/tmp/faucet.wal",
         "--host-ip",
         "0.0.0.0",
+        "--amount",
+        "10000000000000",
       ]
     restart: on-failure
     logging:

@@ -7,8 +7,6 @@ from pathlib import Path
 from cli_cluster import run_cli_cluster_example
 from colorama import init as colorama_init
 from ig_post_planner import run_ig_post_planner_example
-from pysui.sui.sui_clients.sync_client import SuiClient
-from pysui.sui.sui_config import SuiConfig
 from trip_planner import run_trip_planner_example
 from nexus_sdk import get_sui_client
 
@@ -17,10 +15,13 @@ from nexus_sdk import get_sui_client
 repo_root_dir = Path(__file__).resolve().parent.parent
 
 # Define paths to shared resources
-shared_dir = "/app/shared"
-keystore_path = Path("/app/sui.keystore")
+shared_dir = Path(os.getenv('SHARED_DIR', '.'))
+keystore_path =  Path(shared_dir) / "sui.keystore"
 package_id_path = Path(shared_dir) / "package-id.json"
 node_details_path = Path(shared_dir) / "node_details.json"
+
+rpc_url = os.getenv("RPC_URL", "http://localhost:9000")
+ws_url = os.getenv("WS_URL", "ws://localhost:9000")
 
 # Maps example name to a function that runs it.
 # In essence, this is the source of truth for supported examples.
@@ -95,12 +96,9 @@ def main():
 
     # Load configuration from known paths
     package_id, llama_id, llama_owner_cap_id, private_key = load_configuration()
-
     # Create the Sui client
-    rpc_url = os.getenv("RPC_URL", "http://localhost:9000")
-    ws_url = os.getenv("WS_URL", "ws://localhost:9000")
-    client = get_sui_client(private_key, rpc_url=rpc_url, ws_url=ws_url)
 
+    client = get_sui_client(private_key, rpc_url=rpc_url, ws_url=ws_url)
     # Run the selected example
     try:
         print(f"\nRunning example: {example_name}\n")

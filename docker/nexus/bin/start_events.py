@@ -4,12 +4,17 @@ import subprocess
 from pathlib import Path
 
 # Set paths
-shared_dir = "/app/shared"
-keystore_path = Path("/app/sui.keystore")
+shared_dir = Path(os.getenv('SHARED_DIR', '.'))
+keystore_path = Path(shared_dir) / "sui.keystore"
 
 # Extract details from JSON files
 package_id_path = Path(shared_dir) / "package-id.json"
 node_details_path = Path(shared_dir) / "node_details.json"
+
+
+rpc_url = os.getenv('RPC_URL', 'http://localhost:9000')
+ws_url = os.getenv('WS_URL', 'ws://localhost:9000')
+tool_url = os.getenv('TOOL_URL', 'http://0.0.0.0:8080/tool/use')
 
 # Load package ID
 try:
@@ -47,10 +52,6 @@ except (FileNotFoundError, json.JSONDecodeError, ValueError) as e:
 os.environ['PACKAGE_ID'] = package_id
 os.environ['SUI_PRIVATE_KEY'] = private_key
 os.environ['MODEL_OWNER_CAP_ID'] = model_owner_cap_id
-
-rpc_url = os.getenv('RPC_URL', 'http://localhost:9000')
-ws_url = os.getenv('WS_URL', 'ws://localhost:9000')
-tool_url = os.getenv('TOOL_URL', 'http://0.0.0.0:8080/tool/use')
 
 # Command to run the Python script
 command = [
