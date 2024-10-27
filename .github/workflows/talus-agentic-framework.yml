@@ -1,8 +1,11 @@
 # Github workflow to build and test the Talus Agentic Framework project
 
 name: Talus Agentic Framework
-on: [push]
-
+on:
+  push:
+    paths:
+      - "onchain/**"
+      - "e2e_tests/**"
 env:
   # defines what Sui version to install from the Sui's Github release page
   # https://github.com/MystenLabs/sui/releases
