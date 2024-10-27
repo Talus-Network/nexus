@@ -198,6 +198,24 @@ services:
       - ./genesis/static/fullnode.yaml:/opt/sui/config/fullnode.yaml:ro
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
       - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "-X",
+          "POST",
+          "-H",
+          "Content-Type: application/json",
+          "-d",
+          '{"jsonrpc":"2.0","method":"sui_getChainIdentifier","id":1}',
+          "http://localhost:9000",
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
     command:
       [
         "/usr/local/bin/sui-node",
@@ -230,11 +248,10 @@ services:
       - "5003:5003"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5003"]
-      interval: 30s
+      interval: 5s
       timeout: 10s
       retries: 3
-      start_period: 10s
-
+      start_period: 120s
     volumes:
       - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
       - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
@@ -260,6 +277,8 @@ services:
         condition: service_completed_successfully
       build-suitools:
         condition: service_completed_successfully
+      fullnode1:
+        condition: service_healthy
 
 volumes:
   validator1-db:

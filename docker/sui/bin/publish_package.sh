@@ -2,7 +2,7 @@
 
 # Step 0: Check ENV for SHARED_DIR and build PACKAGE_ID_FILE location
 SHARED_DIR="${SHARED_DIR:-/shared}"
-PACKAGE_ID_FILE="$SHARED_DIR/package-id.json"
+PACKAGE_ID_FILE="$SHARED_DIR/package_id.json"
 
 if [ ! -f "$PACKAGE_ID_FILE" ]; then
     echo "Package ID file not found. Proceeding to publish package."

@@ -19,5 +19,5 @@ __all__ = [
     "execute_cluster",
     "get_cluster_execution_response",
     "get_sui_client",
-    "get_sui_client_with_airdrop"
+    "get_sui_client_with_airdrop",
 ]

@@ -73,7 +73,7 @@ services:
       publish-package:
         condition: service_completed_successfully
       faucet:
-        condition: service_started
+        condition: service_healthy
 
   examples:
     image: talus-network/nexus-examples:latest
@@ -95,3 +95,9 @@ services:
     depends_on:
       publish-package:
         condition: service_completed_successfully
+      bootstrap-model:
+        condition: service_completed_successfully
+      tools:
+        condition: service_started
+      events:
+        condition: service_started

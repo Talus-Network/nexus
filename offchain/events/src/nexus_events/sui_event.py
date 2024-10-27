@@ -80,7 +80,11 @@ def sanitize_text(text):
 
 
 async def prompt_event_handler(
-    client: SuiClient, package_id: str, model_owner_cap_id: str, event: SubscribedEvent, tool_url: str
+    client: SuiClient,
+    package_id: str,
+    model_owner_cap_id: str,
+    event: SubscribedEvent,
+    tool_url: str,
 ) -> Any:
     """Handler captures the move event type for each received."""
     try:
@@ -247,7 +251,11 @@ def process_next_event_page(
 
     print(f"Processing {len(events)} events")
     for event in events:
-        asyncio.run(prompt_event_handler(client, package_id, model_owner_cap_id, event, tool_url))
+        asyncio.run(
+            prompt_event_handler(
+                client, package_id, model_owner_cap_id, event, tool_url
+            )
+        )
 
     # Set the cursor to the last event.
     # Also next fetch will skip the first event (the last event of this fetch)
