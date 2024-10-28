@@ -25,4 +25,4 @@ COPY generate.py .
 RUN python3 -m pip install -r requirements.txt
 
 # Set the entrypoint to run the generation script with the target directory
-ENTRYPOINT ["/bin/bash", "-c", "./generate.py --genesis-template compose-validators.yaml --target-directory ${TARGET_DIR}"]
+CMD ["/bin/bash", "-c", "python3 generate.py --genesis-template compose-validators.yaml --target-directory ${TARGET_DIR}"]

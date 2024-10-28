@@ -20,7 +20,7 @@ services:
         SUI_TAG: ${SUI_TAG}
     pull_policy: never
     volumes:
-      - ./genesis:/opt/sui/genesis
+      - genesis:/opt/sui/genesis/files
     environment:
       - SUI_TAG=${SUI_TAG}
     restart: "no"
@@ -63,14 +63,17 @@ services:
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - validator1-db:/opt/sui/db:rw
-      - ./genesis/files/validator1-8080.yaml:/opt/sui/config/validator.yaml:ro
-      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
+      - genesis:/opt/sui/config
+    #    - ./genesis/files/validator1-8080.yaml:/opt/sui/config/validator.yaml:ro
+    #    - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
     command:
       [
         "/usr/local/bin/sui-node",
         "--config-path",
-        "/opt/sui/config/validator.yaml",
+        "/opt/sui/config/validator1-8080.yaml",
       ]
+    # command: ["tail", "-f", "/dev/null"]
+
     restart: on-failure
     logging:
       driver: "json-file"
@@ -95,13 +98,14 @@ services:
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - validator2-db:/opt/sui/db:rw
-      - ./genesis/files/validator2-8080.yaml:/opt/sui/config/validator.yaml:ro
-      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
+      - genesis:/opt/sui/config
+    #      - ./genesis/files/validator2-8080.yaml:/opt/sui/config/validator.yaml:ro
+    #      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
     command:
       [
         "/usr/local/bin/sui-node",
         "--config-path",
-        "/opt/sui/config/validator.yaml",
+        "/opt/sui/config/validator2-8080.yaml",
       ]
     restart: on-failure
     logging:
@@ -127,13 +131,14 @@ services:
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - validator3-db:/opt/sui/db:rw
-      - ./genesis/files/validator3-8080.yaml:/opt/sui/config/validator.yaml:ro
-      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
+      - genesis:/opt/sui/config
+    #      - ./genesis/files/validator3-8080.yaml:/opt/sui/config/validator.yaml:ro
+    #      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
     command:
       [
         "/usr/local/bin/sui-node",
         "--config-path",
-        "/opt/sui/config/validator.yaml",
+        "/opt/sui/config/validator3-8080.yaml",
       ]
     restart: on-failure
     logging:
@@ -159,13 +164,14 @@ services:
       - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - validator4-db:/opt/sui/db:rw
-      - ./genesis/files/validator4-8080.yaml:/opt/sui/config/validator.yaml:ro
-      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
+      - genesis:/opt/sui/config
+    #      - ./genesis/files/validator4-8080.yaml:/opt/sui/config/validator.yaml:ro
+    #      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
     command:
       [
         "/usr/local/bin/sui-node",
         "--config-path",
-        "/opt/sui/config/validator.yaml",
+        "/opt/sui/config/validator4-8080.yaml",
       ]
     restart: on-failure
     logging:
@@ -195,8 +201,9 @@ services:
       - RPC_URL=${RPC_URL}
     volumes:
       - fullnode1-db:/opt/sui/db:rw
+      - genesis:/opt/sui/config
       - ./genesis/static/fullnode.yaml:/opt/sui/config/fullnode.yaml:ro
-      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
+      # - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
       - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
     healthcheck:
       test:
@@ -253,8 +260,9 @@ services:
       retries: 3
       start_period: 120s
     volumes:
+      - genesis:/opt/sui/config
       - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
-      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
+      # - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
       - ./genesis/static/sui.keystore:/opt/sui/config/sui.keystore:ro
     command:
       [
@@ -281,6 +289,7 @@ services:
         condition: service_healthy
 
 volumes:
+  genesis:
   validator1-db:
   validator2-db:
   validator3-db:
