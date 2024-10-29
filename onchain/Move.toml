@@ -1,7 +1,7 @@
 [package]
 name = "talus"
 edition = "2024.beta"
-authors = ["Talus (	engineering@talus.network)"]
+authors = ["Talus (engineering@talus.network)"]
 license = "Business Source License 1.1"
 
 [dependencies]
