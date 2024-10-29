@@ -5,8 +5,10 @@ import sys
 import re
 import argparse
 import time
+import signal
 
-OLLAMA_PID_FILE = "./docker/ollama.pid"
+# Set OLLAMA_PID_FILE to a path in the /tmp directory
+OLLAMA_PID_FILE = "/tmp/ollama.pid"
 
 def load_env_file(env_path):
     """Loads environment variables from a .env file and adds them to os.environ."""
@@ -123,29 +125,25 @@ def start_ollama_serve():
             # Start ollama serve in the background
             print("Starting Ollama server...")
             serve_command = "nohup ollama serve &"
-            serve_process = subprocess.Popen(serve_command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            pid = serve_process.pid
-            print(f"Ollama server started with PID: {pid}")
-
-            # Save the PID to a file
-            with open(OLLAMA_PID_FILE, "w") as pid_file:
-                pid_file.write(str(pid))
-            print(f"Saved Ollama PID to {OLLAMA_PID_FILE}")
-
-            # Wait until Ollama is running
+            subprocess.Popen(serve_command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            
+            # Wait for the server to start and capture the correct PID
             print("Waiting for Ollama to start...")
-            while True:
-                try:
-                    response = subprocess.run(["curl", "-s", "http://localhost:11434"], capture_output=True, text=True)
-                    if "Ollama is running" in response.stdout:
-                        print("Ollama is running")
-                        break
-                    else:
-                        print("Waiting for Ollama to start...")
-                        time.sleep(2)
-                except subprocess.CalledProcessError:
-                    print("Failed to connect to Ollama, retrying...")
-                    time.sleep(2)
+            time.sleep(5)  # Give it some time to properly start
+
+            # Find the process PID using pgrep
+            result = subprocess.run(["pgrep", "-f", "ollama serve"], capture_output=True, text=True)
+            if result.stdout:
+                pid = int(result.stdout.strip())
+                print(f"Ollama server started with PID: {pid}")
+
+                # Save the PID to a file
+                with open(OLLAMA_PID_FILE, "w") as pid_file:
+                    pid_file.write(str(pid))
+                print(f"Saved Ollama PID to {OLLAMA_PID_FILE}")
+            else:
+                print("Failed to find the Ollama serve process.")
+                sys.exit(1)
 
             # Pull the specified model
             print(f"Pulling model version: {model_version}")
@@ -157,6 +155,7 @@ def start_ollama_serve():
 
 def change_to_docker_directory():
     try:
+        print(os.getcwd())
         os.chdir("./docker")
         print(f"Changed working directory to: {os.getcwd()}")
     except FileNotFoundError:
@@ -176,15 +175,23 @@ def docker_compose_up():
         compose_file = "docker-compose-nollama.yaml"
         print("Using docker-compose-nollama.yaml for macOS")
 
+        # Override the MODEL_URL environment variable on macOS
+        os.environ["MODEL_URL"] = "http://host.docker.internal:11434"
+
     # Load environment variables from the .env file
     load_env_file(".env")
+
+    # Ensure the environment has the updated MODEL_URL for macOS
+    env_vars = os.environ.copy()
+    if os_type == "Darwin":
+        env_vars["MODEL_URL"] = "http://host.docker.internal:11434"
 
     try:
         # Use subprocess.run with env argument to override environment variables
         subprocess.run(
             ["docker", "compose", "-f", compose_file, "up", "-d"],
             check=True,
-            env=os.environ
+            env=env_vars  # Pass our modified environment with correct MODEL_URL
         )
     except subprocess.CalledProcessError as e:
         print(f"Failed to run Docker Compose up: {e}")
@@ -211,7 +218,6 @@ def docker_compose_down():
         stop_ollama_serve()
 
 def docker_delete_volumes():
-    change_to_docker_directory()
     try:
         # List of volumes to delete
         volumes_to_delete = [
@@ -231,19 +237,32 @@ def docker_delete_volumes():
         sys.exit(1)
 
 def stop_ollama_serve():
-    """Stops the Ollama server if it is running."""
+    """Stops the Ollama server and all related processes if they are running."""
     if os.path.exists(OLLAMA_PID_FILE):
         try:
             with open(OLLAMA_PID_FILE, "r") as pid_file:
                 pid = int(pid_file.read().strip())
                 print(f"Stopping Ollama server with PID: {pid}")
-                os.kill(pid, 9)  # Send SIGKILL to the process
+                os.kill(pid, signal.SIGTERM)  # Send SIGTERM to the main ollama process
+            
+            # Remove the PID file
             os.remove(OLLAMA_PID_FILE)
             print(f"PID file {OLLAMA_PID_FILE} deleted.")
+            
+            # Find and kill any remaining related processes (e.g., ollama_llama_server)
+            related_processes = subprocess.run(["pgrep", "-f", "ollama"], capture_output=True, text=True)
+            if related_processes.stdout:
+                pids = related_processes.stdout.strip().split('\n')
+                for related_pid in pids:
+                    print(f"Killing related Ollama process with PID: {related_pid}")
+                    os.kill(int(related_pid), signal.SIGTERM)  # Use SIGTERM to allow graceful shutdown
+        except ProcessLookupError:
+            print(f"Error stopping Ollama server: No such process with PID {pid}. It may have already been stopped.")
         except Exception as e:
             print(f"Error stopping Ollama server: {e}")
     else:
         print(f"PID file {OLLAMA_PID_FILE} not found. Ollama server may not be running.")
+
 
 def main():
     parser = argparse.ArgumentParser(description="Control the Docker Compose deployment and overall environment.")
