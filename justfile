@@ -14,7 +14,7 @@ mod containers 'docker/containers.just'
 
 # Opens a Python shell inside the Docker container
 interactive-shell:
-    if [[ {{os()}} == "Linux" ]] || [[ {{os()}} == "Darwin" ]]; then \
+    if [[ {{os()}} == "Linux" ]] || [[ {{os()}} == "macos" ]]; then \
         echo "Opening an interactive Python shell in the Docker container..."; \
         docker exec -it examples /bin/bash -c "source .venv/bin/activate && ptpython"; \
     else \
@@ -23,7 +23,7 @@ interactive-shell:
 
 # Builds and starts the entire environment
 environment-up:
-    if [[ {{os()}} == "Linux" ]] || [[ {{os()}} == "Darwin" ]]; then \
+    if [[ {{os()}} == "Linux" ]] || [[ {{os()}} == "macos" ]]; then \
         echo "Building and starting the entire environment..."; \
         python ./docker/nexusctl.py create; \
         python ./docker/nexusctl.py start; \
@@ -33,7 +33,7 @@ environment-up:
 
 # Shuts down and cleans up the environment
 environment-down:
-    if [[ {{os()}} == "Linux" ]] || [[ {{os()}} == "Darwin" ]]; then \
+    if [[ {{os()}} == "Linux" ]] || [[ {{os()}} == "macos" ]]; then \
         echo "Stopping and cleaning up the entire environment..."; \
         python ./docker/nexusctl.py stop; \
         python ./docker/nexusctl.py delete; \
