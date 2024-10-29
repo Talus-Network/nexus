@@ -312,11 +312,14 @@ def main():
             start_ollama_serve()
         docker_compose_up()
     elif args.command == "stop":
+        detect_gpu_and_set_env()
         docker_compose_down()
     elif args.command == "delete":
+        detect_gpu_and_set_env()
         docker_compose_down()
         docker_delete_volumes()
     elif args.command == "create":
+        detect_gpu_and_set_env()
         docker_compose_build()
 
 if __name__ == "__main__":
