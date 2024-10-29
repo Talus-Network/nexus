@@ -6,7 +6,7 @@ default:
 [no-cd]
 check:
     # If the system is Linux or macOS, execute the check with bash.
-    @if [[ {{os()}} == "Linux" ]] || [[ {{os()}} == "macos" ]]; then \
+    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
         if ! docker ps | grep -q "examples"; then \
             echo "Docker environment is not running. Starting environment..."; \
             just containers start; \
@@ -20,7 +20,7 @@ check:
 # Builds the Docker containers using Docker Compose
 [no-cd]
 build:
-    @if [[ {{os()}} == "Linux" ]] || [[ {{os()}} == "macos" ]]; then \
+    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
         echo "Building Docker containers..."; \
         python ./docker/nexusctl.py create; \
     else \
@@ -30,7 +30,7 @@ build:
 # Starts the Docker containers using Docker Compose
 [no-cd]
 start:
-    @if [[ {{os()}} == "Linux" ]] || [[ {{os()}} == "macos" ]]; then \
+    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
         echo "Starting Docker containers..."; \
         python ./docker/nexusctl.py start; \
     else \
@@ -40,7 +40,7 @@ start:
 # Stops the Docker containers using Docker Compose
 [no-cd]
 stop:
-    @if [[ {{os()}} == "Linux" ]] || [[ {{os()}} == "macos" ]]; then \
+    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
         echo "Stopping Docker containers..."; \
         python ./docker/nexusctl.py stop; \
     else \
@@ -50,7 +50,7 @@ stop:
 # Deletes all Docker volumes related to the project using Docker Compose
 [no-cd]
 clean:
-    @if [[ {{os()}} == "Linux" ]] || [[ {{os()}} == "macos" ]]; then \
+    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
         echo "Deleting Docker volumes..."; \
         python ./docker/nexusctl.py delete; \
     else \
