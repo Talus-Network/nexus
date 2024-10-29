@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   build-suitools:
     restart: "no"
@@ -39,7 +37,6 @@ services:
       - RPC_URL=${RPC_URL}
 
     volumes:
-      - ./genesis/files:/opt/sui/genesis
       - shared:/app/shared
       - ./bin/publish_package.sh:/opt/sui/publish_package.sh:ro
       - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
@@ -64,15 +61,12 @@ services:
     volumes:
       - validator1-db:/opt/sui/db:rw
       - genesis:/opt/sui/config
-    #    - ./genesis/files/validator1-8080.yaml:/opt/sui/config/validator.yaml:ro
-    #    - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
     command:
       [
         "/usr/local/bin/sui-node",
         "--config-path",
         "/opt/sui/config/validator1-8080.yaml",
       ]
-    # command: ["tail", "-f", "/dev/null"]
 
     restart: on-failure
     logging:
@@ -99,8 +93,6 @@ services:
     volumes:
       - validator2-db:/opt/sui/db:rw
       - genesis:/opt/sui/config
-    #      - ./genesis/files/validator2-8080.yaml:/opt/sui/config/validator.yaml:ro
-    #      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
     command:
       [
         "/usr/local/bin/sui-node",
@@ -132,8 +124,6 @@ services:
     volumes:
       - validator3-db:/opt/sui/db:rw
       - genesis:/opt/sui/config
-    #      - ./genesis/files/validator3-8080.yaml:/opt/sui/config/validator.yaml:ro
-    #      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
     command:
       [
         "/usr/local/bin/sui-node",
@@ -165,8 +155,6 @@ services:
     volumes:
       - validator4-db:/opt/sui/db:rw
       - genesis:/opt/sui/config
-    #      - ./genesis/files/validator4-8080.yaml:/opt/sui/config/validator.yaml:ro
-    #      - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
     command:
       [
         "/usr/local/bin/sui-node",
@@ -203,7 +191,6 @@ services:
       - fullnode1-db:/opt/sui/db:rw
       - genesis:/opt/sui/config
       - ./genesis/static/fullnode.yaml:/opt/sui/config/fullnode.yaml:ro
-      # - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
       - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
     healthcheck:
       test:
@@ -262,7 +249,6 @@ services:
     volumes:
       - genesis:/opt/sui/config
       - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
-      # - ./genesis/files/genesis.blob:/opt/sui/config/genesis.blob:ro
       - ./genesis/static/sui.keystore:/opt/sui/config/sui.keystore:ro
     command:
       [

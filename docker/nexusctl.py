@@ -74,7 +74,7 @@ def detect_gpu_and_set_env():
             print("NVIDIA GPU detected")
             os.environ["OLLAMA_DEVICE_DRIVER"] = "nvidia"
             os.environ["OLLAMA_DEVICE_COUNT"] = "all"
-            os.environ["OLLAMA_DEVICE_CAPABILITIES"] = "[gpu]"
+            os.environ["OLLAMA_DEVICE_CAPABILITIES"] = "gpu"
         else:
             print("No GPU detected")
             os.environ["OLLAMA_DEVICE_DRIVER"] = ""
@@ -86,7 +86,7 @@ def detect_gpu_and_set_env():
             print("NVIDIA GPU detected")
             os.environ["OLLAMA_DEVICE_DRIVER"] = "nvidia"
             os.environ["OLLAMA_DEVICE_COUNT"] = "all"
-            os.environ["OLLAMA_DEVICE_CAPABILITIES"] = "[gpu]"
+            os.environ["OLLAMA_DEVICE_CAPABILITIES"] = "gpu"
         else:
             print("No GPU detected")
             os.environ["OLLAMA_DEVICE_DRIVER"] = ""
@@ -155,7 +155,6 @@ def start_ollama_serve():
 
 def change_to_docker_directory():
     try:
-        print(os.getcwd())
         os.chdir("./docker")
         print(f"Changed working directory to: {os.getcwd()}")
     except FileNotFoundError:
@@ -195,6 +194,38 @@ def docker_compose_up():
         )
     except subprocess.CalledProcessError as e:
         print(f"Failed to run Docker Compose up: {e}")
+        sys.exit(1)
+
+def docker_compose_build():
+    change_to_docker_directory()
+    os_type = platform.system()
+
+    compose_file = "docker-compose.yaml"
+    if os_type == "Darwin":
+        # Use a different compose file for macOS
+        compose_file = "docker-compose-nollama.yaml"
+        print("Using docker-compose-nollama.yaml for macOS")
+
+        # Override the MODEL_URL environment variable on macOS
+        os.environ["MODEL_URL"] = "http://host.docker.internal:11434"
+
+    # Load environment variables from the .env file
+    load_env_file(".env")
+
+    # Ensure the environment has the updated MODEL_URL for macOS
+    env_vars = os.environ.copy()
+    if os_type == "Darwin":
+        env_vars["MODEL_URL"] = "http://host.docker.internal:11434"
+
+    try:
+        # Use subprocess.run with env argument to override environment variables
+        subprocess.run(
+            ["docker", "compose", "-f", compose_file, "build"],
+            check=True,
+            env=env_vars  # Pass our modified environment with correct MODEL_URL
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to run Docker Compose build: {e}")
         sys.exit(1)
 
 def docker_compose_down():
@@ -263,10 +294,9 @@ def stop_ollama_serve():
     else:
         print(f"PID file {OLLAMA_PID_FILE} not found. Ollama server may not be running.")
 
-
 def main():
     parser = argparse.ArgumentParser(description="Control the Docker Compose deployment and overall environment.")
-    parser.add_argument("command", choices=["start", "stop", "delete"], help="Command to execute: start, stop, delete")
+    parser.add_argument("command", choices=["start", "stop", "delete", "create"], help="Command to execute: start, stop, delete, create")
     args = parser.parse_args()
 
     # Check Docker Compose version
@@ -286,6 +316,8 @@ def main():
     elif args.command == "delete":
         docker_compose_down()
         docker_delete_volumes()
+    elif args.command == "create":
+        docker_compose_build()
 
 if __name__ == "__main__":
     main()

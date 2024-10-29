@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   tools:
     container_name: tools
@@ -12,6 +10,11 @@ services:
     restart: unless-stopped
     environment:
       OLLAMA_HOST: ${MODEL_URL}
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "1g"
     depends_on:
       build-suitools:
         condition: service_completed_successfully
@@ -30,6 +33,11 @@ services:
         INSTALL_RUST: "true"
     command: >
       bash -c "source .venv/bin/activate && python start_events.py"
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "1g"
     environment:
       RPC_URL: ${RPC_URL}
       WS_URL: ${WS_URL}

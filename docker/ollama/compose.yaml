@@ -1,16 +1,14 @@
-version: "3.8"
-
 services:
   ollama:
     image: talus-network/ollama:${LLAMA_MODEL_VERSION_TAG}
     container_name: ollama
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: all
-    #           capabilities: [gpu]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: ${OLLAMA_DEVICE_DRIVER}
+              count: ${OLLAMA_DEVICE_COUNT}
+              capabilities: ["${OLLAMA_DEVICE_CAPABILITIES}"]
     build:
       context: "."
       args:
