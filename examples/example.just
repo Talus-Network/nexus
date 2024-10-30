@@ -13,14 +13,17 @@ version-check:
 # Runs an example that prompts the user for a description of their post.
 [no-cd]
 ig-post-planner:
-    @__import__('os').system("just containers check && docker exec -it examples /bin/bash -c 'source .venv/bin/activate && python examples/main.py ig_post_planner'")
+    @__import__('os').system("just containers check")
+    @__import__('os').system("docker exec -it examples /bin/bash -c \"source .venv/bin/activate && python examples/main.py ig_post_planner\"")
 
 # Runs an example that prompts the user for description of their trip.
 [no-cd]
 trip-planner:
-    @__import__('os').system("just containers check && docker exec -it examples /bin/bash -c 'source .venv/bin/activate && python examples/main.py trip_planner'")
+    @__import__('os').system("just containers check")
+    @__import__('os').system("docker exec -it examples /bin/bash -c \"source .venv/bin/activate && python examples/main.py trip_planner\"")
 
 # Runs an example that prompts the user for description of their cluster.
 [no-cd]
 cli-cluster:
-   @__import__('os').system("just containers check && docker exec -it examples /bin/bash -c 'source .venv/bin/activate && python examples/main.py cli_cluster'")
+    @__import__('os').system("just containers check")
+    @__import__('os').system("docker exec -it examples /bin/bash -c \"source .venv/bin/activate && python examples/main.py cli_cluster\"")
