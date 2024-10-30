@@ -1,42 +1,25 @@
-# Variables for versioning and configurations
-python_version := "3.10"
-llama_version := "llama3.2:1b"
+
+set shell := [ "python3", "-c"]
 
 [private]
-default:
-    @just -l
+default: version-check
+   @__import__('os').system("just -l")
 
+[private]
+version-check:
+    @import sys; major, minor = sys.version_info[:2]; \
+    assert (major, minor) >= (3, 7), "This script requires at least Python 3.7. Please link \"python3\" to Python 3.7 or higher and try again."
+    
 # Commands for running examples
 mod example 'examples/example.just'
 
-# Build, Start, Stop or Clean Up docker containers 
+# Build, Start, Stop, or Clean Up docker containers
 mod containers 'docker/containers.just'
 
-# Opens a Python shell inside the Docker container
-interactive-shell:
-    if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
-        echo "Opening an interactive Python shell in the Docker container..."; \
-        docker exec -it examples /bin/bash -c "source .venv/bin/activate && ptpython"; \
-    else \
-        powershell -Command "docker exec -it examples /bin/bash -c 'source .venv/bin/activate && ptpython'"; \
-    fi
-
 # Builds and starts the entire environment
-environment-up:
-    if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
-        echo "Building and starting the entire environment..."; \
-        python ./docker/nexusctl.py create; \
-        python ./docker/nexusctl.py start; \
-    else \
-        powershell -Command "Write-Host 'Building and starting the entire environment...'; python ./docker/nexusctl.py create; python ./docker/nexusctl.py start"; \
-    fi
+infra-up: version-check
+    @print("Building and starting the entire environment..."); __import__('os').system("just containers build"); __import__('os').system("just containers start")
 
 # Shuts down and cleans up the environment
-environment-down:
-    if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
-        echo "Stopping and cleaning up the entire environment..."; \
-        python ./docker/nexusctl.py stop; \
-        python ./docker/nexusctl.py delete; \
-    else \
-        powershell -Command "Write-Host 'Stopping and cleaning up the entire environment...'; python ./docker/nexusctl.py stop; python ./docker/nexusctl.py delete"; \
-    fi
+infra-down: version-check
+    @print("Stopping and cleaning up the entire environment..."); __import__('os').system("just containers stop"); __import__('os').system("just containers clean")

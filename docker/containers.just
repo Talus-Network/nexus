@@ -1,58 +1,31 @@
+set shell := ["python3", "-c"]
+
 [private]
 default:
-    @just -l containers
+    @__import__('os').system("just -l containers")
 
 [private]
 [no-cd]
 check:
-    # If the system is Linux or macOS, execute the check with bash.
-    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
-        if ! docker ps | grep -q "examples"; then \
-            echo "Docker environment is not running. Starting environment..."; \
-            just containers start; \
-        else \
-            echo "Docker environment is already running."; \
-        fi; \
-    else \
-        powershell -Command "if (!(docker ps | Select-String -Quiet 'examples')) { Write-Host 'Docker environment is not running. Starting environment...'; just containers start } else { Write-Host 'Docker environment is already running.' }"; \
-    fi
+    @import os, sys; from subprocess import call; result = call("docker ps | grep -q 'examples'", shell=True); \
+    print("Docker environment is already running.") if result == 0 else (print("Docker environment is not running. Starting environment...") or os.system("just containers start"))
 
 # Builds the Docker containers using Docker Compose
 [no-cd]
 build:
-    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
-        echo "Building Docker containers..."; \
-        python ./docker/nexusctl.py create; \
-    else \
-        powershell -Command "Write-Host 'Building Docker containers...'; python ./docker/nexusctl.py create"; \
-    fi
+    @print("Building Docker containers..."); __import__('os').system("python3 ./docker/nexusctl.py create")
 
 # Starts the Docker containers using Docker Compose
 [no-cd]
 start:
-    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
-        echo "Starting Docker containers..."; \
-        python ./docker/nexusctl.py start; \
-    else \
-        powershell -Command "Write-Host 'Starting Docker containers...'; python ./docker/nexusctl.py start"; \
-    fi
+    @print("Starting Docker containers..."); __import__('os').system("python3 ./docker/nexusctl.py start")
 
 # Stops the Docker containers using Docker Compose
 [no-cd]
 stop:
-    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
-        echo "Stopping Docker containers..."; \
-        python ./docker/nexusctl.py stop; \
-    else \
-        powershell -Command "Write-Host 'Stopping Docker containers...'; python ./docker/nexusctl.py stop"; \
-    fi
+    @print("Stopping Docker containers..."); __import__('os').system("python3 ./docker/nexusctl.py stop")
 
 # Deletes all Docker volumes related to the project using Docker Compose
 [no-cd]
 clean:
-    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
-        echo "Deleting Docker volumes..."; \
-        python ./docker/nexusctl.py delete; \
-    else \
-        powershell -Command "Write-Host 'Deleting Docker volumes...'; python ./docker/nexusctl.py delete"; \
-    fi
+    @print("Deleting Docker volumes..."); __import__('os').system("python3 ./docker/nexusctl.py delete")

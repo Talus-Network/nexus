@@ -1,39 +1,26 @@
+set shell := [ "python3", "-c"]
+
 [private]
-default:
-    @just -l example
+default: version-check
+   @__import__('os').system("just -l example")
+
+[private]
+version-check:
+    @import sys; major, minor = sys.version_info[:2]; \
+    assert (major, minor) >= (3, 7), "This script requires at least Python 3.7. Please link \"python3\" to Python 3.7 or higher and try again."
+    
 
 # Runs an example that prompts the user for a description of their post.
 [no-cd]
 ig-post-planner:
-    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
-        just containers check && \
-        docker exec -it examples /bin/bash -c "source .venv/bin/activate && python examples/main.py ig_post_planner"; \
-    else \
-        powershell -Command "just containers check"; \
-        powershell -Command "docker exec -it examples /bin/bash -c 'source .venv/bin/activate && python examples/main.py ig_post_planner'"; \
-    fi
+    @__import__('os').system("just containers check && docker exec -it examples /bin/bash -c 'source .venv/bin/activate && python examples/main.py ig_post_planner'")
 
 # Runs an example that prompts the user for description of their trip.
 [no-cd]
 trip-planner:
-    if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
-        just containers check && \
-        docker exec -it examples /bin/bash -c "source .venv/bin/activate && python examples/main.py trip_planner"; \
-    else \
-        powershell -Command "just containers check"; \
-        powershell -Command "docker exec -it examples /bin/bash -c 'source .venv/bin/activate && python examples/main.py trip_planner'"; \
-    fi
-
+    @__import__('os').system("just containers check && docker exec -it examples /bin/bash -c 'source .venv/bin/activate && python examples/main.py trip_planner'")
 
 # Runs an example that prompts the user for description of their cluster.
 [no-cd]
 cli-cluster:
-    @if [[ {{os()}} == "linux" ]] || [[ {{os()}} == "macos" ]]; then \
-        just containers check && \
-        docker exec -it examples /bin/bash -c "source .venv/bin/activate && python examples/main.py cli_cluster"; \
-    else \
-        powershell -Command "docker exec -it examples /bin/bash -c 'source .venv/bin/activate && python examples/main.py cli_cluster'"; \
-    fi
-
-check-os:
-    @echo "{{os()}}"
+   @__import__('os').system("just containers check && docker exec -it examples /bin/bash -c 'source .venv/bin/activate && python examples/main.py cli_cluster'")
