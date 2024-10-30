@@ -66,6 +66,17 @@ def check_docker_compose_version():
         else:
             print(f"Docker Compose version {major}.{minor} is sufficient.")
 
+def check_brew_installed():
+    try:
+        subprocess.run(["brew", "--version"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        print("Brew is installed.")
+    except subprocess.CalledProcessError:
+        print("Brew is not installed. Please install Homebrew from https://brew.sh/ and try again.")
+        sys.exit(1)
+    except FileNotFoundError:
+        print("Brew is not installed. Please install Homebrew from https://brew.sh/ and try again.")
+        sys.exit(1)
+
 def detect_gpu_and_set_env():
     os_type = platform.system()
     if os_type == "Windows":
@@ -104,6 +115,9 @@ def detect_gpu_and_set_env():
 def start_ollama_serve():
     os_type = platform.system()
     if os_type == "Darwin":
+        # Check if brew is installed
+        check_brew_installed()
+
         # Check if ollama is installed with brew
         try:
             if subprocess.run(["brew", "list", "ollama"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode != 0:
