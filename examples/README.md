@@ -29,7 +29,6 @@ You need to install the following tools by following their official installation
 - [`docker`][docker]
 - [`just`][just] (on Linux install it with "Pre-Built Binaries" rather than with `apt` because of an outdated version)
 - [`python`][python]
-- [`ollama`][ollama] (installed automatically)
 
 We use `just` as a general command runner, just run `just` for available commands.
 
@@ -73,7 +72,6 @@ Events allow offchain systems to respond to onchain actions, automating tool exe
 
 [docker]: https://docs.docker.com/engine/install/
 [just]: https://github.com/casey/just
-[ollama]: https://ollama.com/
 [python]: https://www.python.org/downloads/
 [tools_README]: ../offchain/tools/README.md
 [events_README]: ../offchain/events/README.md
