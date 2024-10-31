@@ -1,0 +1,3 @@
+include:
+  - ./sui/compose.yaml
+  - ./nexus/compose.yaml

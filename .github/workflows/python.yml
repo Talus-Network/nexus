@@ -1,8 +1,12 @@
 # Github workflow to check python code
 
 name: Python
-on: [push]
-
+on:
+  push:
+    paths:
+      - "examples/**"
+      - "nexus_sdk/**"
+      - "offchain/**"
 jobs:
   # https://black.readthedocs.io/en/stable/integrations/github_actions.html
   formatting-check:

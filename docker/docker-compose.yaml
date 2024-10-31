@@ -1,0 +1,4 @@
+include:
+  - ./sui/compose.yaml
+  - ./ollama/compose.yaml
+  - ./nexus/compose.yaml
