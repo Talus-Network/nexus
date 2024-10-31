@@ -1,3 +1,23 @@
+x-validator-base: &validator-base
+  image: talusnetwork/sui-tools:${SUI_TAG:-latest}
+  environment: &validator-env
+    - RUST_BACKTRACE=1
+    - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error
+    - RPC_WORKER_THREAD=12
+    - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
+    - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
+  logging: &validator-logging
+    driver: "json-file"
+    options:
+      max-file: "10"
+      max-size: "1g"
+  restart: on-failure
+  depends_on:
+    build-genesis:
+      condition: service_completed_successfully
+    build-suitools:
+      condition: service_completed_successfully
+
 services:
   build-suitools:
     container_name: build-suitools
@@ -50,15 +70,9 @@ services:
         condition: service_completed_successfully
 
   validator1:
-    image: talusnetwork/sui-tools:${SUI_TAG}
+    <<: *validator-base
     container_name: validator1
     hostname: validator1
-    environment:
-      - RUST_BACKTRACE=1
-      - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error
-      - RPC_WORKER_THREAD=12
-      - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
-      - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - validator1-db:/opt/sui/db:rw
       - genesis:/opt/sui/config
@@ -69,28 +83,10 @@ services:
         "/opt/sui/config/validator1-8080.yaml",
       ]
 
-    restart: on-failure
-    logging:
-      driver: "json-file"
-      options:
-        max-file: "10"
-        max-size: "1g"
-    depends_on:
-      build-genesis:
-        condition: service_completed_successfully
-      build-suitools:
-        condition: service_completed_successfully
-
   validator2:
-    image: talusnetwork/sui-tools:${SUI_TAG}
+    <<: *validator-base
     container_name: validator2
     hostname: validator2
-    environment:
-      - RUST_BACKTRACE=1
-      - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error
-      - RPC_WORKER_THREAD=12
-      - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
-      - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - validator2-db:/opt/sui/db:rw
       - genesis:/opt/sui/config
@@ -100,28 +96,11 @@ services:
         "--config-path",
         "/opt/sui/config/validator2-8080.yaml",
       ]
-    restart: on-failure
-    logging:
-      driver: "json-file"
-      options:
-        max-file: "10"
-        max-size: "1g"
-    depends_on:
-      build-genesis:
-        condition: service_completed_successfully
-      build-suitools:
-        condition: service_completed_successfully
 
   validator3:
-    image: talusnetwork/sui-tools:${SUI_TAG}
+    <<: *validator-base
     container_name: validator3
     hostname: validator3
-    environment:
-      - RUST_BACKTRACE=1
-      - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error
-      - RPC_WORKER_THREAD=12
-      - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
-      - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - validator3-db:/opt/sui/db:rw
       - genesis:/opt/sui/config
@@ -131,28 +110,11 @@ services:
         "--config-path",
         "/opt/sui/config/validator3-8080.yaml",
       ]
-    restart: on-failure
-    logging:
-      driver: "json-file"
-      options:
-        max-file: "10"
-        max-size: "1g"
-    depends_on:
-      build-genesis:
-        condition: service_completed_successfully
-      build-suitools:
-        condition: service_completed_successfully
 
   validator4:
-    image: talusnetwork/sui-tools:${SUI_TAG}
+    <<: *validator-base
     container_name: validator4
     hostname: validator4
-    environment:
-      - RUST_BACKTRACE=1
-      - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error
-      - RPC_WORKER_THREAD=12
-      - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
-      - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
     volumes:
       - validator4-db:/opt/sui/db:rw
       - genesis:/opt/sui/config
@@ -162,17 +124,6 @@ services:
         "--config-path",
         "/opt/sui/config/validator4-8080.yaml",
       ]
-    restart: on-failure
-    logging:
-      driver: "json-file"
-      options:
-        max-file: "10"
-        max-size: "1g"
-    depends_on:
-      build-genesis:
-        condition: service_completed_successfully
-      build-suitools:
-        condition: service_completed_successfully
 
   fullnode1:
     image: talusnetwork/sui-tools:${SUI_TAG}
