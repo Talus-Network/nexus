@@ -16,3 +16,6 @@ services:
     ports:
       - "11434:11434"
     restart: unless-stopped
+    depends_on:
+      build-suitools:
+        condition: service_completed_successfully

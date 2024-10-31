@@ -1,5 +1,6 @@
 services:
   build-suitools:
+    container_name: build-suitools
     restart: "no"
     image: talusnetwork/sui-tools:${SUI_TAG}
     build:
