@@ -1,4 +1,3 @@
-
 set shell := [ "python3", "-c"]
 
 [private]
