@@ -1,7 +1,7 @@
 services:
   build-suitools:
     restart: "no"
-    image: talus-network/sui-tools:${SUI_TAG}
+    image: talusnetwork/sui-tools:${SUI_TAG}
     build:
       context: "."
       dockerfile: Dockerfile
@@ -9,7 +9,7 @@ services:
         SUI_TAG: ${SUI_TAG}
 
   build-genesis:
-    image: talus-network/build-sui-genesis:${SUI_TAG}
+    image: talusnetwork/build-sui-genesis:${SUI_TAG}
     container_name: build-genesis
     build:
       context: "./genesis"
@@ -27,7 +27,7 @@ services:
         condition: service_completed_successfully
 
   publish-package:
-    image: talus-network/sui-tools:${SUI_TAG}
+    image: talusnetwork/sui-tools:${SUI_TAG}
     container_name: publish-package
     environment:
       - RUST_BACKTRACE=1
@@ -49,7 +49,7 @@ services:
         condition: service_completed_successfully
 
   validator1:
-    image: talus-network/sui-tools:${SUI_TAG}
+    image: talusnetwork/sui-tools:${SUI_TAG}
     container_name: validator1
     hostname: validator1
     environment:
@@ -81,7 +81,7 @@ services:
         condition: service_completed_successfully
 
   validator2:
-    image: talus-network/sui-tools:${SUI_TAG}
+    image: talusnetwork/sui-tools:${SUI_TAG}
     container_name: validator2
     hostname: validator2
     environment:
@@ -112,7 +112,7 @@ services:
         condition: service_completed_successfully
 
   validator3:
-    image: talus-network/sui-tools:${SUI_TAG}
+    image: talusnetwork/sui-tools:${SUI_TAG}
     container_name: validator3
     hostname: validator3
     environment:
@@ -143,7 +143,7 @@ services:
         condition: service_completed_successfully
 
   validator4:
-    image: talus-network/sui-tools:${SUI_TAG}
+    image: talusnetwork/sui-tools:${SUI_TAG}
     container_name: validator4
     hostname: validator4
     environment:
@@ -174,7 +174,7 @@ services:
         condition: service_completed_successfully
 
   fullnode1:
-    image: talus-network/sui-tools:${SUI_TAG}
+    image: talusnetwork/sui-tools:${SUI_TAG}
     hostname: fullnode1
     container_name: fullnode1
     ports:
@@ -229,7 +229,7 @@ services:
         condition: service_completed_successfully
 
   faucet:
-    image: talus-network/sui-tools:${SUI_TAG}
+    image: talusnetwork/sui-tools:${SUI_TAG}
     hostname: faucet
     container_name: faucet
     environment:

@@ -1,6 +1,6 @@
 services:
   ollama:
-    image: talus-network/ollama:${LLAMA_MODEL_VERSION_TAG}
+    image: talusnetwork/ollama:${LLAMA_MODEL_VERSION_TAG}
     container_name: ollama
     deploy:
       resources:

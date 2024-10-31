@@ -1,7 +1,7 @@
 services:
   tools:
     container_name: tools
-    image: talus-network/nexus-tools:latest
+    image: talusnetwork/nexus-tools:latest
     build:
       context: "../../offchain/tools/"
       dockerfile: "../../docker/nexus/Dockerfile"
@@ -25,7 +25,7 @@ services:
 
   events:
     container_name: events
-    image: talus-network/nexus-events:latest
+    image: talusnetwork/nexus-events:latest
     build:
       context: "../../offchain/"
       dockerfile: "../docker/nexus/Dockerfile"
@@ -60,6 +60,7 @@ services:
 
   bootstrap-model:
     container_name: bootstrap-model
+    image: talusnetwork/nexus-bootstrap-model:latest
     build:
       context: "../../nexus_sdk/"
       dockerfile: "../docker/nexus/Dockerfile"
@@ -84,7 +85,7 @@ services:
         condition: service_healthy
 
   examples:
-    image: talus-network/nexus-examples:latest
+    image: talusnetwork/nexus-examples:latest
     container_name: examples
     build:
       context: "../../nexus_sdk/"

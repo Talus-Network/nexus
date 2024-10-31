@@ -1,6 +1,6 @@
 # Stage 1: Build sui tools and dependencies
 ARG SUI_TAG=testnet-v1.29.1
-FROM talus-network/sui-tools:${SUI_TAG} AS sui-builder
+FROM talusnetwork/sui-tools:${SUI_TAG} AS sui-builder
 
 FROM python:3.9-slim-bullseye
 
