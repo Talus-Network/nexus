@@ -9,13 +9,18 @@ WORKDIR /app
 
 COPY . .
 
-RUN if [ "$INSTALL_RUST" = "true" ]; then \
-        apt-get update && apt-get install -y --no-install-recommends curl build-essential && \ 
-        curl https://sh.rustup.rs -sSf | sh -s -- -y && \
-        . $HOME/.cargo/env && \ 
-        rustup update && \
-        rustup default stable; \
-    fi
+RUN <<EOF
+  set -eo pipefail
+  
+  if [ "$INSTALL_RUST" = "true" ]; then
+     apt-get update
+     apt-get install -y --no-install-recommends curl build-essential
+     curl https://sh.rustup.rs -sSf | sh -s -- -y
+     . $HOME/.cargo/env
+     rustup update
+     rustup default stable
+  fi
+EOF
 
 RUN pip install uv && \
     uv venv -p ${PYTHON_VERSION} && \
