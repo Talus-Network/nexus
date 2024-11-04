@@ -10,33 +10,39 @@ WORKDIR /app
 COPY . .
 
 RUN <<EOF
-  set -eo pipefail
-  
-  if [ "$INSTALL_RUST" = "true" ]; then
-     apt-get update
-     apt-get install -y --no-install-recommends curl build-essential
-     curl https://sh.rustup.rs -sSf | sh -s -- -y
-     . $HOME/.cargo/env
-     rustup update
-     rustup default stable
-  fi
+    set -eu
+    
+    if [ "$INSTALL_RUST" = "true" ]; then
+        apt-get update
+        apt-get install -y --no-install-recommends curl build-essential
+        curl https://sh.rustup.rs -sSf | sh -s -- -y
+        . $HOME/.cargo/env
+        rustup update
+        rustup default stable
+    fi
 EOF
 
-RUN pip install uv && \
-    uv venv -p ${PYTHON_VERSION} && \
-    . .venv/bin/activate && \
-    if [ "$INSTALL_RUST" = "true" ]; then \
-        . $HOME/.cargo/env; \
-    fi && \
-    if [ -f "pyproject.toml" ]; then \
-        uv pip install .; \
-    else \
-        for dir in */; do \
-            if [ -f "$dir/pyproject.toml" ]; then \
-                uv pip install $dir; \
-            fi; \
-        done; \
+RUN <<EOF
+    set -eu
+    pip install uv
+    uv venv -p ${PYTHON_VERSION}
+    export OSTYPE=${OSTYPE:-linux-gnu}
+    . .venv/bin/activate
+
+    if [ "$INSTALL_RUST" = "true" ]; then
+        . $HOME/.cargo/env
     fi
+
+    if [ -f "pyproject.toml" ]; then
+        uv pip install .
+    else
+        for dir in */; do
+            if [ -f "$dir/pyproject.toml" ]; then
+                uv pip install $dir
+            fi
+        done
+    fi
+EOF
 
 
 FROM python:3.10-slim AS runtime
