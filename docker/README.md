@@ -14,7 +14,7 @@ Local infra consists of following services
   - examples
 - ollama (only on windows and linux)
 
-There are also couple startup services
+There are also a few startup services
 
 - sui
   - build-suitools
