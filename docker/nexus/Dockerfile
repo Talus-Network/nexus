@@ -9,10 +9,10 @@ WORKDIR /app
 
 COPY . .
 
-RUN <<EOF
+RUN sh <<'EOF'
     set -eu
     
-    if [ "$INSTALL_RUST" = "true" ]; then
+    if [ "${INSTALL_RUST:-false}" = "true" ]; then
         apt-get update
         apt-get install -y --no-install-recommends curl build-essential
         curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -22,14 +22,15 @@ RUN <<EOF
     fi
 EOF
 
-RUN <<EOF
+RUN sh <<'EOF'
     set -eu
+
     pip install uv
     uv venv -p ${PYTHON_VERSION}
     export OSTYPE=${OSTYPE:-linux-gnu}
     . .venv/bin/activate
 
-    if [ "$INSTALL_RUST" = "true" ]; then
+    if [ "${INSTALL_RUST:-false}" = "true" ]; then
         . $HOME/.cargo/env
     fi
 
@@ -38,7 +39,7 @@ RUN <<EOF
     else
         for dir in */; do
             if [ -f "$dir/pyproject.toml" ]; then
-                uv pip install $dir
+                uv pip install "$dir"
             fi
         done
     fi
