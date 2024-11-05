@@ -1,3 +1,5 @@
+#syntax=docker/dockerfile:1
+
 FROM ollama/ollama:0.3.2
 
 ARG LLAMA_MODEL_VERSION=llama

@@ -1,7 +1,6 @@
 #!/bin/sh
 
 if [ "$INSTALL_RUST" = "true" ]; then
-    exit 1
     apt-get update 
     apt-get install -y --no-install-recommends curl build-essential
     curl https://sh.rustup.rs -sSf | sh -s -- -y
@@ -16,7 +15,6 @@ export OSTYPE=${OSTYPE:-linux-gnu}
 . .venv/bin/activate
 
 if [ "$INSTALL_RUST" = "true" ]; then
-    exit 1
     . $HOME/.cargo/env
 fi
 

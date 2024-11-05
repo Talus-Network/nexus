@@ -1,4 +1,5 @@
-# Build application
+#syntax=docker/dockerfile:1
+
 FROM rust:1.81-bullseye AS builder
 
 ARG PROFILE=release
