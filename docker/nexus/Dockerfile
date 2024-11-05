@@ -4,47 +4,19 @@ FROM python:3.10-slim AS builder
 
 ARG INSTALL_RUST=false
 
+ENV INSTALL_RUST=${INSTALL_RUST}
 
 WORKDIR /app
 
+RUN ls -lta
+
 COPY . .
 
-RUN sh <<'EOF'
-    set -eu
-    
-    if [ "${INSTALL_RUST:-false}" = "true" ]; then
-        apt-get update
-        apt-get install -y --no-install-recommends curl build-essential
-        curl https://sh.rustup.rs -sSf | sh -s -- -y
-        . $HOME/.cargo/env
-        rustup update
-        rustup default stable
-    fi
-EOF
+COPY --from=nexus bin/setup_venv.sh /usr/local/bin/setup_venv.sh
 
-RUN sh <<'EOF'
-    set -eu
+RUN chmod +x /usr/local/bin/setup_venv.sh
 
-    pip install uv
-    uv venv -p ${PYTHON_VERSION}
-    export OSTYPE=${OSTYPE:-linux-gnu}
-    . .venv/bin/activate
-
-    if [ "${INSTALL_RUST:-false}" = "true" ]; then
-        . $HOME/.cargo/env
-    fi
-
-    if [ -f "pyproject.toml" ]; then
-        uv pip install .
-    else
-        for dir in */; do
-            if [ -f "$dir/pyproject.toml" ]; then
-                uv pip install "$dir"
-            fi
-        done
-    fi
-EOF
-
+RUN /usr/local/bin/setup_venv.sh
 
 FROM python:3.10-slim AS runtime
 

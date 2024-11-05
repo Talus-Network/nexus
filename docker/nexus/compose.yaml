@@ -5,6 +5,8 @@ services:
     build:
       context: "../../offchain/tools/"
       dockerfile: "../../docker/nexus/Dockerfile"
+      additional_contexts:
+        nexus: ../../docker/nexus
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -29,6 +31,8 @@ services:
     build:
       context: "../../offchain/"
       dockerfile: "../docker/nexus/Dockerfile"
+      additional_contexts:
+        nexus: ../../docker/nexus
       args:
         INSTALL_RUST: "true"
     command: >
@@ -64,6 +68,8 @@ services:
     build:
       context: "../../nexus_sdk/"
       dockerfile: "../docker/nexus/Dockerfile"
+      additional_contexts:
+        nexus: ../../docker/nexus
       args:
         INSTALL_RUST: "true"
     environment:
@@ -90,6 +96,8 @@ services:
     build:
       context: "../../nexus_sdk/"
       dockerfile: "../docker/nexus/Dockerfile"
+      additional_contexts:
+        nexus: ../../docker/nexus
       args:
         INSTALL_RUST: "true"
     environment:
