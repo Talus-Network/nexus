@@ -2,6 +2,8 @@
 
 name: Talus Agentic Framework
 on:
+  pull_request:
+
   push:
     paths:
       - "onchain/**"
