@@ -1,0 +1,15 @@
+[project]
+name = "nexus-sdk"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pysui==0.52.0",
+    "asyncio",
+    "ptpython",
+    "colorama"
+]
+description = "Nexus SDK Library"
+authors = [
+    { name="Talus", email="hi@talus.network" }
+]

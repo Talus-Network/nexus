@@ -1,0 +1,10 @@
+---
+keystore:
+  File: /opt/sui/config/sui.keystore
+envs:
+  - alias: localnet
+    rpc: "http://fullnode1:9000"
+    ws: ~
+    basic_auth: ~
+active_env: localnet
+active_address: "0xd59d79516a4ed5b6825e80826c075a12bdd2759aaeb901df2f427f5f880c8f60"

@@ -1,0 +1,236 @@
+x-validator-base: &validator-base
+  image: talusnetwork/sui-tools:${SUI_TAG:-latest}
+  environment: &validator-env
+    - RUST_BACKTRACE=1
+    - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error
+    - RPC_WORKER_THREAD=12
+    - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
+    - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
+  logging: &validator-logging
+    driver: "json-file"
+    options:
+      max-file: "10"
+      max-size: "1g"
+  restart: on-failure
+  depends_on:
+    build-genesis:
+      condition: service_completed_successfully
+    build-suitools:
+      condition: service_completed_successfully
+
+services:
+  build-suitools:
+    container_name: build-suitools
+    restart: "no"
+    image: talusnetwork/sui-tools:${SUI_TAG}
+    build:
+      context: "."
+      dockerfile: Dockerfile
+      args:
+        SUI_TAG: ${SUI_TAG}
+
+  build-genesis:
+    image: talusnetwork/build-sui-genesis:${SUI_TAG}
+    container_name: build-genesis
+    build:
+      context: "./genesis"
+      dockerfile: Dockerfile
+      args:
+        SUI_TAG: ${SUI_TAG}
+    pull_policy: never
+    volumes:
+      - genesis:/opt/sui/genesis/files
+    environment:
+      - SUI_TAG=${SUI_TAG}
+    restart: "no"
+    depends_on:
+      build-suitools:
+        condition: service_completed_successfully
+
+  publish-package:
+    image: talusnetwork/sui-tools:${SUI_TAG}
+    container_name: publish-package
+    environment:
+      - RUST_BACKTRACE=1
+      - RUST_LOG=error
+      - SUI_CONFIG_DIR=/opt/sui/config
+      - SHARED_DIR=/app/shared
+      - RPC_URL=${RPC_URL}
+
+    volumes:
+      - shared:/app/shared
+      - ./bin/publish_package.sh:/opt/sui/publish_package.sh:ro
+      - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
+      - ./genesis/static/sui.keystore:/opt/sui/config/sui.keystore:ro
+      - ../../onchain:/opt/sui/onchain
+    command: ["bash", "/opt/sui/publish_package.sh"]
+    restart: on-failure
+    depends_on:
+      build-suitools:
+        condition: service_completed_successfully
+
+  validator1:
+    <<: *validator-base
+    container_name: validator1
+    hostname: validator1
+    volumes:
+      - validator1-db:/opt/sui/db:rw
+      - genesis:/opt/sui/config
+    command:
+      [
+        "/usr/local/bin/sui-node",
+        "--config-path",
+        "/opt/sui/config/validator1-8080.yaml",
+      ]
+
+  validator2:
+    <<: *validator-base
+    container_name: validator2
+    hostname: validator2
+    volumes:
+      - validator2-db:/opt/sui/db:rw
+      - genesis:/opt/sui/config
+    command:
+      [
+        "/usr/local/bin/sui-node",
+        "--config-path",
+        "/opt/sui/config/validator2-8080.yaml",
+      ]
+
+  validator3:
+    <<: *validator-base
+    container_name: validator3
+    hostname: validator3
+    volumes:
+      - validator3-db:/opt/sui/db:rw
+      - genesis:/opt/sui/config
+    command:
+      [
+        "/usr/local/bin/sui-node",
+        "--config-path",
+        "/opt/sui/config/validator3-8080.yaml",
+      ]
+
+  validator4:
+    <<: *validator-base
+    container_name: validator4
+    hostname: validator4
+    volumes:
+      - validator4-db:/opt/sui/db:rw
+      - genesis:/opt/sui/config
+    command:
+      [
+        "/usr/local/bin/sui-node",
+        "--config-path",
+        "/opt/sui/config/validator4-8080.yaml",
+      ]
+
+  fullnode1:
+    image: talusnetwork/sui-tools:${SUI_TAG}
+    hostname: fullnode1
+    container_name: fullnode1
+    ports:
+      - "9000:9000"
+    environment:
+      - RUST_BACKTRACE=1
+      - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error
+      - RPC_WORKER_THREAD=12
+      - NEW_CHECKPOINT_WARNING_TIMEOUT_MS=30000
+      - NEW_CHECKPOINT_PANIC_TIMEOUT_MS=60000
+      - SUI_CONFIG_DIR=/opt/sui/config
+      - RPC_URL=${RPC_URL}
+    volumes:
+      - fullnode1-db:/opt/sui/db:rw
+      - genesis:/opt/sui/config
+      - ./genesis/static/fullnode.yaml:/opt/sui/config/fullnode.yaml:ro
+      - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "-X",
+          "POST",
+          "-H",
+          "Content-Type: application/json",
+          "-d",
+          '{"jsonrpc":"2.0","method":"sui_getChainIdentifier","id":1}',
+          "http://localhost:9000",
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    command:
+      [
+        "/usr/local/bin/sui-node",
+        "--config-path",
+        "/opt/sui/config/fullnode.yaml",
+      ]
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "1g"
+    depends_on:
+      build-genesis:
+        condition: service_completed_successfully
+      build-suitools:
+        condition: service_completed_successfully
+
+  faucet:
+    image: talusnetwork/sui-tools:${SUI_TAG}
+    hostname: faucet
+    container_name: faucet
+    environment:
+      - RUST_BACKTRACE=1
+      - RUST_LOG=info,sui_core=info,sui_network=info,sui_node=info,narwhal=info,narwhal-primary::helper=info,jsonrpsee=error
+      - SUI_CONFIG_DIR=/opt/sui/config
+      - HOST_IP=0.0.0.0
+      - RPC_URL=${RPC_URL}
+    ports:
+      - "5003:5003"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5003"]
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    volumes:
+      - genesis:/opt/sui/config
+      - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
+      - ./genesis/static/sui.keystore:/opt/sui/config/sui.keystore:ro
+    command:
+      [
+        "/usr/local/bin/sui-faucet",
+        "--write-ahead-log",
+        "/tmp/faucet.wal",
+        "--host-ip",
+        "0.0.0.0",
+        "--amount",
+        "10000000000000",
+      ]
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "1g"
+    depends_on:
+      build-genesis:
+        condition: service_completed_successfully
+      build-suitools:
+        condition: service_completed_successfully
+      fullnode1:
+        condition: service_healthy
+
+volumes:
+  genesis:
+  validator1-db:
+  validator2-db:
+  validator3-db:
+  validator4-db:
+  fullnode1-db:
+  shared:

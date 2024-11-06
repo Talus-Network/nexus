@@ -1,0 +1,21 @@
+services:
+  ollama:
+    image: talusnetwork/ollama:${LLAMA_MODEL_VERSION_TAG}
+    container_name: ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: ${OLLAMA_DEVICE_DRIVER}
+              count: ${OLLAMA_DEVICE_COUNT}
+              capabilities: ["${OLLAMA_DEVICE_CAPABILITIES}"]
+    build:
+      context: "."
+      args:
+        LLAMA_MODEL_VERSION: ${LLAMA_MODEL_VERSION}
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    depends_on:
+      build-suitools:
+        condition: service_completed_successfully

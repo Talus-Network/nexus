@@ -1,0 +1,120 @@
+services:
+  tools:
+    container_name: tools
+    image: talusnetwork/nexus-tools:latest
+    build:
+      context: "../../offchain/tools/"
+      dockerfile: "../../docker/nexus/Dockerfile"
+      additional_contexts:
+        nexus: ../../docker/nexus
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    environment:
+      OLLAMA_HOST: ${MODEL_URL}
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "1g"
+    depends_on:
+      build-suitools:
+        condition: service_completed_successfully
+      publish-package:
+        condition: service_completed_successfully
+      bootstrap-model:
+        condition: service_completed_successfully
+
+  events:
+    container_name: events
+    image: talusnetwork/nexus-events:latest
+    build:
+      context: "../../offchain/"
+      dockerfile: "../docker/nexus/Dockerfile"
+      additional_contexts:
+        nexus: ../../docker/nexus
+      args:
+        INSTALL_RUST: "true"
+    command: >
+      bash -c "source .venv/bin/activate && python start_events.py"
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "10"
+        max-size: "1g"
+    environment:
+      RPC_URL: ${RPC_URL}
+      WS_URL: ${WS_URL}
+      TOOL_URL: ${TOOL_URL}
+      LLM_ASSISTANT_URL: ${LLM_ASSISTANT_URL}
+      SHARED_DIR: /app/shared
+    volumes:
+      - shared:/app/shared
+      - ./bin/start_events.py:/app/start_events.py:ro
+    restart: unless-stopped
+    depends_on:
+      build-suitools:
+        condition: service_completed_successfully
+      publish-package:
+        condition: service_completed_successfully
+      bootstrap-model:
+        condition: service_completed_successfully
+      tools:
+        condition: service_started
+
+  bootstrap-model:
+    container_name: bootstrap-model
+    image: talusnetwork/nexus-bootstrap-model:latest
+    build:
+      context: "../../nexus_sdk/"
+      dockerfile: "../docker/nexus/Dockerfile"
+      additional_contexts:
+        nexus: ../../docker/nexus
+      args:
+        INSTALL_RUST: "true"
+    environment:
+      RPC_URL: ${RPC_URL}
+      WS_URL: ${WS_URL}
+      MODEL_URL: ${MODEL_URL}
+      FAUCET_URL: ${FAUCET_URL}
+      SHARED_DIR: /app/shared
+    volumes:
+      - ./bin/bootstrap_model.py:/app/bootstrap_model.py
+      - shared:/app/shared
+    command: >
+      bash -c "source .venv/bin/activate && python bootstrap_model.py"
+    restart: on-failure
+    depends_on:
+      publish-package:
+        condition: service_completed_successfully
+      faucet:
+        condition: service_healthy
+
+  examples:
+    image: talusnetwork/nexus-examples:latest
+    container_name: examples
+    build:
+      context: "../../nexus_sdk/"
+      dockerfile: "../docker/nexus/Dockerfile"
+      additional_contexts:
+        nexus: ../../docker/nexus
+      args:
+        INSTALL_RUST: "true"
+    environment:
+      RPC_URL: ${RPC_URL}
+      WS_URL: ${WS_URL}
+      SHARED_DIR: /app/shared
+    volumes:
+      - ../../examples:/app/examples
+      - shared:/app/shared
+    command: ["tail", "-f", "/dev/null"]
+    restart: on-failure
+    depends_on:
+      publish-package:
+        condition: service_completed_successfully
+      bootstrap-model:
+        condition: service_completed_successfully
+      tools:
+        condition: service_started
+      events:
+        condition: service_started

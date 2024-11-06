@@ -5,76 +5,38 @@ We have built a few examples to showcase Nexus agents.
 Before you can use the examples or build your own agents, you need to install a few things first,
 as shown in the next section.
 
-When you run either of the examples, you will be prompted to start two services:
-
-- [`tools`][tools_README] which you need to start only once for all examples, and
-- [`events`][events_README] which you need to start for each example anew and once the example finished, you can stop it.
-
-You will be given exact instructions on how to start and stop these services when you run either example.
-
 - [Examples](#examples)
   - [Environment setup](#environment-setup)
     - [Operating System](#operating-system)
     - [Helper tools](#helper-tools)
-    - [Operating System packages](#operating-system-packages)
-    - [Python and virtual environment](#python-and-virtual-environment)
-    - [Suibase](#suibase)
-    - [`PATH`](#path)
-    - [Ollama](#ollama)
+    - [Docker](#docker)
   - [Example: Instagram Post Planner](#example-instagram-post-planner)
   - [Example: Trip Planner](#example-trip-planner)
   - [Example: CLI Cluster](#example-cli-cluster)
   - [Tools](#tools)
+  - [Events](#events)
 
 ## Environment setup
 
 ### Operating System
 
-We assume Ubuntu `22.04 LTS`.
+We support macOS, windows and linux.
 
 ### Helper tools
 
 You need to install the following tools by following their official installation instructions:
 
-- [`cargo`][cargo]
+- [`docker`][docker]
 - [`just`][just] (on Linux install it with "Pre-Built Binaries" rather than with `apt` because of an outdated version)
-- [`uv`][uv]
+- [`python`][python]
 
-We use `just` as a general command runner, and `uv` to manage Python and virtual environments
-(`.venv`). The [`justfile`][justfile] contains installation instructions for everything we
-describe here, and you can run `just` from this folder, as it will automatically discover the
-`justfile` at the top level.
+We use `just` as a general command runner, just run `just` for available commands.
 
-### Operating System packages
+### Docker
 
-You can install dependencies with `just apt-setup`.
+We use Docker to create a consistent local environment for all examples, ensuring compatibility across macOS, Windows, and Linux. By packaging dependencies into isolated containers, we aim to provide a uniform environment that minimizes compatibility issues. To run these examples, you’ll need Docker Compose version 2.20 or higher.
 
-### Python and virtual environment
-
-We install and use Python `3.10`.
-
-From inside the working copy of the repository, run `just venv-setup` to:
-
-- install Python,
-- create the necessary `.venv`,
-- install all the needed dependencies in the `.venv`.
-
-### Suibase
-
-Talus smart contracts are written in Sui Move, and until our testnet is ready we use a
-compatible (from the Sui Move point of view) chain, based on [`Suibase`][suibase].
-
-You can download and install Suibase with `just suibase-setup`.
-
-### `PATH`
-
-Make sure `~/.local/bin` is in your `PATH`. Suibase requires this, as it installs its
-executables there.
-
-### Ollama
-
-For the LLM component we install and use [Ollama][ollama] with the `llama3.2:1b` model. You can
-install both with `just ollama-setup`.
+**Note for macOS users:** While Ollama can run in a container on macOS, it experiences poor performance due to Docker Desktop for macOS lacking GPU acceleration support. To ensure better performance, Ollama is running directly on the host instead of within a container.
 
 ## Example: Instagram Post Planner
 
@@ -102,17 +64,18 @@ Run with `just example cli-cluster`.
 Agents can use tools to enhance their capabilities. Please refer to the [`tools` README][tools_README]
 for a list of available tools, and instructions on how to add new ones.
 
+## Events
+
+Events allow offchain systems to respond to onchain actions, automating tool execution and model inference based on specific triggers. Please refer to the [`events` README][events_README] for more details.
+
 <!-- List of Links -->
 
-[cargo]: https://doc.rust-lang.org/cargo/getting-started/installation.html
+[docker]: https://docs.docker.com/engine/install/
 [just]: https://github.com/casey/just
-[uv]: https://github.com/astral-sh/uv
-[suibase]: https://suibase.io/
-[ollama]: https://ollama.com/
+[python]: https://www.python.org/downloads/
 [tools_README]: ../offchain/tools/README.md
 [events_README]: ../offchain/events/README.md
 [ig_post_planner]: ./ig_post_planner.py
 [trip_planner]: ./trip_planner.py
 [cli_cluster]: ./cli_cluster.py
-[justfile]: ../justfile
 [design_cluster]: ../onchain/README.md#cluster
