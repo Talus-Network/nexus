@@ -19,6 +19,15 @@ x-validator-base: &validator-base
       condition: service_completed_successfully
 
 services:
+  initialize-onchain:
+    image: alpine:latest
+    container_name: initialize-onchain
+    command: ["sh", "-c", "cp -r /source/* /data"]
+    volumes:
+      - ../../onchain:/source:ro
+      - onchain:/data
+    restart: "no"
+
   build-suitools:
     container_name: build-suitools
     restart: "no"
@@ -62,11 +71,13 @@ services:
       - ./bin/publish_package.sh:/opt/sui/publish_package.sh:ro
       - ./genesis/static/client.yaml:/opt/sui/config/client.yaml:rw
       - ./genesis/static/sui.keystore:/opt/sui/config/sui.keystore:ro
-      - ../../onchain:/opt/sui/onchain
+      - onchain:/opt/sui/onchain
     command: ["bash", "/opt/sui/publish_package.sh"]
     restart: on-failure
     depends_on:
       build-suitools:
+        condition: service_completed_successfully
+      initialize-onchain:
         condition: service_completed_successfully
 
   validator1:
@@ -227,6 +238,7 @@ services:
         condition: service_healthy
 
 volumes:
+  onchain:
   genesis:
   validator1-db:
   validator2-db:
