@@ -8,6 +8,7 @@ from cli_cluster import run_cli_cluster_example
 from colorama import init as colorama_init
 from ig_post_planner import run_ig_post_planner_example
 from trip_planner import run_trip_planner_example
+from leftovers_chef import run_example as run_leftovers_chef_example
 from nexus_sdk import get_sui_client
 
 # We know that this script is located in the ./examples directory, so we go
@@ -29,6 +30,7 @@ EXAMPLES = {
     "trip_planner": run_trip_planner_example,
     "ig_post_planner": run_ig_post_planner_example,
     "cli_cluster": run_cli_cluster_example,
+    "leftovers_chef": run_leftovers_chef_example,
 }
 
 
@@ -97,7 +99,7 @@ def main():
     )
     parser.add_argument(
         "example_name",
-        help="The name of the example to run. Available examples: trip_planner, ig_post_planner, cli_cluster",
+        help="The name of the example to run. Available examples: trip_planner, ig_post_planner, cli_cluster, leftovers_chef",
     )
     args = parser.parse_args()
 
