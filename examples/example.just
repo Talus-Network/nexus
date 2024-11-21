@@ -27,3 +27,9 @@ trip-planner:
 cli-cluster:
     @__import__('os').system("just containers check")
     @__import__('os').system("docker exec -it examples /bin/bash -c \"source .venv/bin/activate && python examples/main.py cli_cluster\"")
+
+# Runs an example that prompts the user for a description of their meal to prepare
+[no-cd]
+leftovers-chef:
+    @__import__('os').system("just containers check")
+    @__import__('os').system("docker exec -it examples /bin/bash -c \"source .venv/bin/activate && python examples/main.py leftovers_chef\"")
