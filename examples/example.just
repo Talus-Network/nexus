@@ -27,3 +27,9 @@ trip-planner:
 cli-cluster:
     @__import__('os').system("just containers check")
     @__import__('os').system("docker exec -it examples /bin/bash -c \"source .venv/bin/activate && python examples/main.py cli_cluster\"")
+
+# Runs Event Planner Example
+[no-cd]
+event-planner:
+    @__import__('os').system("just containers check")
+    @__import__('os').system("docker exec -it examples /bin/bash -c \"source .venv/bin/activate && python examples/main.py event_planner\"")
