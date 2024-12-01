@@ -74,7 +74,7 @@ graph TD
 
 ## Looking forward
 
-Our first iteration had focused on feasibility, and as an aid in exploring the design space. You
+Our first iteration focused on feasibility, and as an aid in exploring the design space. You
 can build agents that work end-to-end. Here are some thoughts, which also give you an idea of
 some of the things we are actively working on:
 
