@@ -6,7 +6,7 @@
 #
 # The script assumes:
 # - sui CLI, jq, cargo
-# - env var SUI_WALLET_PATH poiting to the wallet yaml
+# - env var SUI_WALLET_PATH pointing to the wallet yaml
 #   or it can be alternatively defined in .env file (see README)
 # - pwd is a git repo
 #
