@@ -1,4 +1,4 @@
-### This class will basically overrides the LLM implementaion for Ollama as we added
+### This class will basically overrides the LLM implementation for Ollama as we added
 ### the ability to report usage per agent request, the logic here is to be able to chrage
 
 
