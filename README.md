@@ -1,5 +1,19 @@
 # Nexus
 
+🚨 **DISCLAIMER:PLEASE READ BEFORE CONTRIBUTING OR USING THIS REPO** 🚨
+
+This repository is **no longer actively maintained for long-term support**. The maintainers are currently working on an updated and improved architecture, and as such, this codebase should only be used for **educational purposes** or reference.
+
+✅ You may explore the code to learn from past implementations.  
+❌ Do **NOT** expect long-term updates, bug fixes, or compatibility improvements.  
+❌ Do **NOT** contribute new features with the expectation of them being merged for future support.  
+
+For updates on our latest work, follow our [blog][blog].  
+
+Thank you for your understanding! 🙏  
+
+## Overview
+
 Nexus is the onchain Agentic Framework created by [Talus][talus].
 The current version, provided here, is a sneak preview of our first iteration. There are
 [many ideas](#what-remains-to-be-done) to develop it further but in it's current state it still
